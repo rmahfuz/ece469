@@ -37,7 +37,7 @@ void main (int argc, char *argv[])
   // int to command line argument
   ditoa(0.5*num_h2o, num_three_str);
   ditoa(num_so4, num_four_str);
-  ditoa(findmin(num_h2o, 0.5*num_h2o + num_so4, num_so4), num_five_str);
+  ditoa(findmin((num_h2o/2)*2, (num_h2o/2) + num_so4, num_so4), num_five_str);
   
   // Create semaphore to not exit this process until all other processes are done
   if ((s_procs_completed = sem_create(-3)) == SYNC_FAIL) {

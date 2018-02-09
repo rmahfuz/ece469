@@ -1,0 +1,39 @@
+cd ../../bin; dlxsim -x os.dlx.obj -a -u makeprocs.dlx.obj 5 6; ee469_fixterminal
+Stack=0x1fffc0, pc starting at 0x115f0
+Got 4 arguments.
+Available memory: 0x1c854 -> 0x200000.
+Argument count is 4.
+Argument 0 is -u.
+Argument 1 is makeprocs.dlx.obj.
+Argument 2 is 5.
+Argument 3 is 6.
+H2O injected
+H2O injected
+H2O injected
+H2O injected
+SO4 injected
+SO4 injected
+H2O injected
+O2 formed from H2O
+SO4 injected
+SO4 injected
+O2 formed from H2O
+O2 formed from SO4
+SO4 injected
+SO4 injected
+H2SO4 formed
+O2 formed from SO4
+H2SO4 formed
+H2SO4 formed
+H2SO4 formed
+O2 formed from SO4
+O2 formed from SO4
+All other processes completed, exiting main process.
+O2 formed from SO4
+O2 formed from SO4
+No runnable processes - exiting!
+Exiting at program request.
+Instructions executed: 18595668
+Time simulated: 18.596 secs
+Real time elapsed: 0.961 secs
+Execution rate: 19.34M simulated instructions per real second.

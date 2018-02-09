@@ -1,5 +1,11 @@
 1) 32
+
 2) 64
-3) Calling the SemCreate function, which grabs a semaphore from the array of semaphores, if available. It returns the index of the grabbed semaphore from the sems array.
-4)
+
+3) There is structure Sem to store information about a semaphore like the count, whether or not it is in use and the queue of waiting processes. There is an array of such structures which is of length MAX_SEMS, which is named sems.
+The SemCreate function traverses through the sems array and finds the first semaphore not in use. Then it initializes it to the requested count, puts it into use and returns the handle, which is the index of this semaphore in the sems array. If all semaphores in the array are already in use, it is not possible to create another semaphore.
+
+4) sem_signal increases the count of the semaphore. sem_wait waits until the count of the semaphore is greater than 0, and then decrements the count. If the process has to wait for the count to become more than 0, it is entered into the waiting queue and put to sleep. When a process signals, the first process from the queue of sleeping waiting processes is woken up so that it can now decrement the count of the semaphore.
+
 5) The handle of a semaphore is the index of the semaphore in sems, which is an array of all semaphores in the system. sems[sem_handle] is how a semaphore is accessed.
+The handle of a lock is the index of the lock in locks, which is an array of all locks in the system. locks[lock_handle] is how a lock is accessed.

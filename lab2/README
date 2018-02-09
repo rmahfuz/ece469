@@ -3,7 +3,7 @@
 'make' from apps/desired_solution
 'make run' from apps/desired_solution
 
-2) Nothing
+2) The current code for q2 works fine. But sometimes when print statements are moved around, the processes do not finish.
 
 3) None
 
