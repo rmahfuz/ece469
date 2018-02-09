@@ -1,0 +1,83 @@
+cd ../../bin; dlxsim -x os.dlx.obj -a -u makeprocs.dlx.obj 3; ee469_fixterminal
+Stack=0x1fffc8, pc starting at 0x11020
+Got 3 arguments.
+Available memory: 0x1b7dc -> 0x200000.
+Argument count is 3.
+Argument 0 is -u.
+Argument 1 is makeprocs.dlx.obj.
+Argument 2 is 3.
+calling process_create with two parameters
+Creating 3 processes
+Producer 30 inserted: H
+Producer 30 inserted: e
+Producer 29 inserted: H
+Producer 30 inserted: l
+Producer 30 inserted: l
+Producer 29 inserted: e
+Producer 30 inserted: o
+Consumer 27 removed: H
+Producer 28 inserted: H
+Producer 29 inserted: l
+Consumer 27 removed: e
+Producer 30 inserted:  
+Producer 28 inserted: e
+Consumer 25 removed: H
+Consumer 27 removed: l
+Consumer 26 removed: l
+Producer 29 inserted: l
+Producer 30 inserted: w
+Consumer 25 removed: e
+Producer 28 inserted: l
+Consumer 27 removed: o
+Consumer 26 removed: H
+Producer 29 inserted: o
+Producer 30 inserted: o
+Consumer 25 removed: l
+Consumer 27 removed:  
+Consumer 26 removed: e
+Producer 28 inserted: l
+Producer 29 inserted:  
+Consumer 25 removed: l
+Consumer 27 removed: w
+Consumer 26 removed: l
+Producer 30 inserted: r
+Producer 28 inserted: o
+Consumer 25 removed: o
+Consumer 27 removed: o
+Consumer 26 removed: l
+Producer 29 inserted: w
+Producer 30 inserted: l
+Consumer 25 removed:  
+Consumer 27 removed: r
+Consumer 26 removed: o
+Producer 28 inserted:  
+Producer 29 inserted: o
+Consumer 25 removed: w
+Consumer 27 removed: l
+Consumer 26 removed:  
+Producer 30 inserted: d
+Producer 28 inserted: w
+Consumer 25 removed: o
+Consumer 27 removed: d
+Consumer 26 removed: w
+Producer 29 inserted: r
+Consumer 25 removed: r
+Producer 28 inserted: o
+Producer 29 inserted: l
+Consumer 25 removed: o
+Consumer 27 removed: l
+Producer 28 inserted: r
+Consumer 25 removed: r
+Producer 29 inserted: d
+Consumer 26 removed: d
+Producer 28 inserted: l
+Consumer 26 removed: l
+Producer 28 inserted: d
+Consumer 26 removed: d
+All other processes completed, exiting main process.
+No runnable processes - exiting!
+Exiting at program request.
+Instructions executed: 25193701
+Time simulated: 25.194 secs
+Real time elapsed: 2.041 secs
+Execution rate: 12.34M simulated instructions per real second.

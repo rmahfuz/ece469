@@ -1,0 +1,1 @@
+gcc-dlx -mtraps -O3 -Wall -I../include -I../include/os -c -o work/filesys.o filesys.c

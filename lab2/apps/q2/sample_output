@@ -1,0 +1,95 @@
+cd ../../bin; dlxsim -x os.dlx.obj -a -u makeprocs.dlx.obj 3; ee469_fixterminal
+Stack=0x1fffc8, pc starting at 0x10130
+Got 3 arguments.
+Available memory: 0x1b2b8 -> 0x200000.
+Argument count is 3.
+Argument 0 is -u.
+Argument 1 is makeprocs.dlx.obj.
+Argument 2 is 3.
+calling process_create with two parameters
+Creating 3 processes
+Producer 30 inserted: H, head = 1, tail = 0
+Process producer 0 created
+Producer 30 inserted: e, head = 2, tail = 0
+Producer 29 inserted: H, head = 3, tail = 0
+Process producer 1 created
+Producer 30 inserted: l, head = 4, tail = 0
+Producer 29 inserted: e, head = 5, tail = 0
+Producer 28 inserted: H, head = 6, tail = 0
+Process producer 2 created
+Producer 30 inserted: l, head = 7, tail = 0
+Producer 29 inserted: l, head = 8, tail = 0
+Producer 28 inserted: e, head = 9, tail = 0
+before releasing: Consumer 27 removed: H, head = 9, tail = 1
+Process consumer 0 created
+Process consumer 1 created
+Process consumer 2 created
+Producer 30 inserted: o, head = 10, tail = 1
+Producer 28 inserted: l, head = 11, tail = 1
+before releasing: Consumer 26 removed: e, head = 11, tail = 2
+Producer 29 inserted: l, head = 0, tail = 2
+before releasing: Consumer 27 removed: H, head = 0, tail = 3
+before releasing: Consumer 25 removed: l, head = 0, tail = 4
+Producer 30 inserted:  , head = 1, tail = 4
+Producer 28 inserted: l, head = 2, tail = 4
+before releasing: Consumer 26 removed: e, head = 2, tail = 5
+Producer 29 inserted: o, head = 3, tail = 5
+before releasing: Consumer 27 removed: H, head = 3, tail = 6
+before releasing: Consumer 25 removed: l, head = 3, tail = 7
+Producer 30 inserted: w, head = 4, tail = 7
+Producer 28 inserted: o, head = 5, tail = 7
+before releasing: Consumer 26 removed: l, head = 5, tail = 8
+Producer 29 inserted:  , head = 6, tail = 8
+before releasing: Consumer 27 removed: e, head = 6, tail = 9
+before releasing: Consumer 25 removed: o, head = 6, tail = 10
+Producer 30 inserted: o, head = 7, tail = 10
+Producer 28 inserted:  , head = 8, tail = 10
+before releasing: Consumer 26 removed: l, head = 8, tail = 11
+Producer 29 inserted: w, head = 9, tail = 11
+before releasing: Consumer 27 removed: l, head = 9, tail = 0
+before releasing: Consumer 25 removed:  , head = 9, tail = 1
+Producer 30 inserted: r, head = 10, tail = 1
+Producer 28 inserted: w, head = 11, tail = 1
+before releasing: Consumer 26 removed: l, head = 11, tail = 2
+Producer 29 inserted: o, head = 0, tail = 2
+before releasing: Consumer 27 removed: o, head = 0, tail = 3
+before releasing: Consumer 25 removed: w, head = 0, tail = 4
+Producer 30 inserted: l, head = 1, tail = 4
+Producer 28 inserted: o, head = 2, tail = 4
+before releasing: Consumer 26 removed: o, head = 2, tail = 5
+Producer 29 inserted: r, head = 3, tail = 5
+before releasing: Consumer 27 removed:  , head = 3, tail = 6
+before releasing: Consumer 25 removed: o, head = 3, tail = 7
+Producer 30 inserted: d, head = 4, tail = 7
+Producer 28 inserted: r, head = 5, tail = 7
+producer: PID 30 is complete, head = 5, tail = 7
+before releasing: Consumer 26 removed:  , head = 5, tail = 8
+Producer 29 inserted: l, head = 6, tail = 8
+before releasing: Consumer 27 removed: w, head = 6, tail = 9
+before releasing: Consumer 25 removed: r, head = 6, tail = 10
+Producer 28 inserted: l, head = 7, tail = 10
+before releasing: Consumer 26 removed: w, head = 7, tail = 11
+Producer 29 inserted: d, head = 8, tail = 11
+before releasing: Consumer 27 removed: o, head = 8, tail = 0
+producer: PID 29 is complete, head = 8, tail = 0
+before releasing: Consumer 25 removed: l, head = 8, tail = 1
+Producer 28 inserted: d, head = 9, tail = 1
+before releasing: Consumer 26 removed: o, head = 9, tail = 2
+producer: PID 28 is complete, head = 9, tail = 2
+before releasing: Consumer 27 removed: r, head = 9, tail = 3
+before releasing: Consumer 25 removed: d, head = 9, tail = 4
+before releasing: Consumer 26 removed: r, head = 9, tail = 5
+before releasing: Consumer 27 removed: l, head = 9, tail = 6
+consumer: PID 27 is complete, head = 9, tail = 6
+before releasing: Consumer 25 removed: l, head = 9, tail = 7
+before releasing: Consumer 26 removed: d, head = 9, tail = 8
+consumer: PID 26 is complete, head = 9, tail = 8
+before releasing: Consumer 25 removed: d, head = 9, tail = 9
+consumer: PID 25 is complete, head = 9, tail = 9
+All other processes completed, exiting main process.
+No runnable processes - exiting!
+Exiting at program request.
+Instructions executed: 24028843
+Time simulated: 24.029 secs
+Real time elapsed: 0.728 secs
+Execution rate: 33.01M simulated instructions per real second.

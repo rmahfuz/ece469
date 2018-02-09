@@ -1,0 +1,11 @@
+How to build my solution:
+1) From the lab1/os directory, issue the 'make' command.
+2) From the lab1/apps directory, issue the 'make' command.
+3) From the lab1/apps directory, issue the 'make run' command.
+4) Hit Ctrl+C to stop the program.
+
+There is nothing unusual.
+
+List of external sources referenced while working om solution:
+1) Chapter 2 lecture
+2) Tutorialspoint's C pointer arithmetic page: https://www.tutorialspoint.com/cprogramming/c_pointer_arithmetic.htm

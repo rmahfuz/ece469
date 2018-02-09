@@ -1,0 +1,5 @@
+1) 32
+2) 64
+3) Calling the SemCreate function, which grabs a semaphore from the array of semaphores, if available. It returns the index of the grabbed semaphore from the sems array.
+4)
+5) The handle of a semaphore is the index of the semaphore in sems, which is an array of all semaphores in the system. sems[sem_handle] is how a semaphore is accessed.
