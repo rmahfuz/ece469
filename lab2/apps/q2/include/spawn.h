@@ -6,8 +6,8 @@
 typedef struct circ_buf {
 	char buf[BUF_SIZE];
 	int numprocs;
-	int head;
-	int tail;
+	volatile int head;
+	volatile int tail;
 } circ_buf;
 
 

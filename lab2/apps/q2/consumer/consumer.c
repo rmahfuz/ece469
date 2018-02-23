@@ -33,7 +33,7 @@ void main (int argc, char *argv[])
     Exit();
   }
   for (i = 0; i < STRING_LEN; i++) {
-		Printf("");
+		//Printf("");
 		while (cb->head == cb->tail); // wait while buffer is empty
 		// get the lock
 		if (lock_acquire(lock_buf) == SYNC_FAIL) {

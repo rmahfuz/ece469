@@ -1,0 +1,33 @@
+cd ../../bin; dlxsim -x os.dlx.obj -a -u makeprocs.dlx.obj 11; ee469_fixterminal
+Stack=0x1fffc8, pc starting at 0x115f0
+Got 3 arguments.
+Available memory: 0x1c854 -> 0x200000.
+Argument count is 3.
+Argument 0 is -u.
+Argument 1 is makeprocs.dlx.obj.
+Argument 2 is 11.
+calling process_create with two parameters
+Creating 11 processes
+Producer 30 inserted: H
+Producer 30 inserted: e
+Producer 29 inserted: H
+Producer 30 inserted: l
+Producer 28 inserted: H
+Producer 29 inserted: e
+Producer 30 inserted: l
+Producer 28 inserted: e
+Producer 26 inserted: H
+Producer 29 inserted: l
+Producer 30 inserted: o
+Producer 25 inserted: H
+Producer 28 inserted: l
+Producer 26 inserted: e
+Producer 24 inserted: H
+Producer 30 inserted:  
+Producer 27 inserted: H
+bFATAL: couldn't allocate system stack - no free pages!
+Exiting at program request.
+Instructions executed: 44494152
+Time simulated: 44.494 secs
+Real time elapsed: 2.291 secs
+Execution rate: 19.42M simulated instructions per real second.
