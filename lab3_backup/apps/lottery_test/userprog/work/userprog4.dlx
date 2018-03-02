@@ -1,108 +1,47 @@
 ; Linked by DLX-LD.
 ; MemSize 24576
-; Data size: 247
-; Text size: 4948
+; Data size: 375
+; Text size: 4808
 ; Stack size: 8192
 .text 0x1000
 .data 0x3000
 ; Compiled by GCC
-.text
-.align 2
-.proc _isspace
-.global _isspace
-_isspace:
-;  Function 'isspace'; 0 bytes of locals, 1 regs to save.
-	sw	-4(r29),r30; push fp
-	add	r30,r0,r29; fp = sp
-	sw	-8(r29),r31; push ret addr
-	subui	r29,r29,#16; alloc local storage
-	sw	0(r29),r2
-	lb	r2,3(r30)
-	addi	r31,r0,#0
-	andi	r1,r2,#0x00ff
-	seqi	r1,r1,#32
-	bnez	r1,L6_LF0
-	nop; not filled.
-	addi	r1,r2,#-9
-	andi	r1,r1,#0x00ff
-	sleui	r1,r1,#1
-	beqz	r1,L5_LF0
-	nop; not filled.
-L6_LF0:
-	addi	r31,r0,#1
-L5_LF0:
-	add	r1,r0,r31
-	lw	r2,0(r29)
-	lw	r31,-8(r30)
-	add	r29,r0,r30
-	lw	r30,-4(r30)
-	jr	r31
-	nop
-.endproc _isspace
-.align 2
-.proc _isxdigit
-.global _isxdigit
-_isxdigit:
-;  Function 'isxdigit'; 0 bytes of locals, 1 regs to save.
-	sw	-4(r29),r30; push fp
-	add	r30,r0,r29; fp = sp
-	sw	-8(r29),r31; push ret addr
-	subui	r29,r29,#16; alloc local storage
-	sw	0(r29),r2
-	lb	r31,3(r30)
-	addi	r2,r0,#0
-	addi	r1,r31,#-48
-	andi	r1,r1,#0x00ff
-	sleui	r1,r1,#9
-	bnez	r1,L12_LF0
-	nop; not filled.
-	addi	r1,r31,#-97
-	andi	r1,r1,#0x00ff
-	sleui	r1,r1,#5
-	bnez	r1,L12_LF0
-	nop; not filled.
-	andi	r1,r31,#0x00ff
-	snei	r1,r1,#65
-	bnez	r1,L11_LF0
-	nop; not filled.
-L12_LF0:
-	addi	r2,r0,#1
-L11_LF0:
-	add	r1,r0,r2
-	lw	r2,0(r29)
-	lw	r31,-8(r30)
-	add	r29,r0,r30
-	lw	r30,-4(r30)
-	jr	r31
-	nop
-.endproc _isxdigit
-.data
+
 .align 2
 LC0_LF0:
-.ascii "Could not map the shared page to virtual address, exiting..\n\000"
+.ascii "userprog4.c: Just entered case 2\n\000"
 .align 2
 LC1_LF0:
-.ascii "Setting number = %d\n\000"
+.ascii "Could not map the shared page to virtual address, exiting..\n\000"
 .align 2
 LC2_LF0:
-.ascii "userprog4.dlx.obj\000"
+.ascii "Setting number = %d\n\000"
 .align 2
 LC3_LF0:
-.ascii "Could not map the virtual address to the memory, exiting...\n\000"
+.ascii "userprog4.c: In case 2: going to create process %d \n\000"
 .align 2
 LC4_LF0:
-.ascii "%c%d\n\000"
+.ascii "userprog4.dlx.obj\000"
 .align 2
 LC5_LF0:
-.ascii "***** Process %d reached %d *****\n\000"
+.ascii "userprog4.c: Just entered case 4\n\000"
 .align 2
 LC6_LF0:
-.ascii "Usage: \000"
+.ascii "Could not map the virtual address to the memory, exiting...\n\000"
 .align 2
 LC7_LF0:
-.ascii " number\n\000"
+.ascii "%c%d\n\000"
 .align 2
 LC8_LF0:
+.ascii "***** Process %d reached %d *****\n\000"
+.align 2
+LC9_LF0:
+.ascii "Usage: \000"
+.align 2
+LC10_LF0:
+.ascii " number\n\000"
+.align 2
+LC11_LF0:
 .ascii "argc = %d\n\000"
 .text
 .align 2
@@ -119,48 +58,53 @@ _main:
 	jal	___main
 	nop; not filled.
 	seqi	r1,r2,#2
-	bnez	r1,L15_LF0
+	bnez	r1,L3_LF0
 	nop; not filled.
 	seqi	r1,r2,#4
-	beqz	r1,L35_LF0
+	beqz	r1,L23_LF0
 	nop; not filled.
-	j	L22_LF0
+	j	L10_LF0
 	nop; not filled.
-L15_LF0:
-	jal	_shmget
-	nop; not filled.
-	add	r2,r0,r1
-	addi	r29,r29,#-8
-	sw	(r29),r2
-	jal	_shmat
-	nop; not filled.
-	add	r5,r0,r1
-	addi	r29,r29,#8
-	snei	r1,r5,#0
-	bnez	r1,L16_LF0
-	nop; not filled.
+L3_LF0:
 	addi	r29,r29,#-8
 	lhi	r10,((LC0_LF0)>>16)&0xffff
 	addui	r10,r10,(LC0_LF0)&0xffff
 	sw	(r29),r10
 	jal	_Printf
 	nop; not filled.
+	jal	_shmget
+	nop; not filled.
+	add	r2,r0,r1
+	sw	(r29),r1
+	jal	_shmat
+	nop; not filled.
+	add	r5,r0,r1
+	addi	r29,r29,#8
+	snei	r1,r5,#0
+	bnez	r1,L4_LF0
+	nop; not filled.
+	addi	r29,r29,#-8
+	lhi	r10,((LC1_LF0)>>16)&0xffff
+	addui	r10,r10,(LC1_LF0)&0xffff
+	sw	(r29),r10
+	jal	_Printf
+	nop; not filled.
 	jal	_exit
 	nop; not filled.
-L16_LF0:
+L4_LF0:
 	addi	r10,r0,#0
 	sw	(r5),r10
 	addi	r29,r29,#-8
 	sw	(r29),r10
 	jal	_sem_create
 	nop; not filled.
-	add	r8,r0,r1
+	add	r7,r0,r1
 	sw	(r29),r2
 	addi	r9,r30,#-56
 	sw	4(r29),r9
 	jal	_ditoa
 	nop; not filled.
-	sw	(r29),r8
+	sw	(r29),r7
 	addi	r6,r30,#-40
 	sw	4(r29),r6
 	jal	_ditoa
@@ -174,8 +118,8 @@ L16_LF0:
 	jal	_dstrtol
 	nop; not filled.
 	add	r4,r0,r1
-	lhi	r10,((LC1_LF0)>>16)&0xffff
-	addui	r10,r10,(LC1_LF0)&0xffff
+	lhi	r10,((LC2_LF0)>>16)&0xffff
+	addui	r10,r10,(LC2_LF0)&0xffff
 	sw	(r29),r10
 	sw	4(r29),r4
 	jal	_Printf
@@ -183,48 +127,61 @@ L16_LF0:
 	addi	r2,r0,#0
 	addi	r29,r29,#16
 	slt	r1,r2,r4
-	beqz	r1,L18_LF0
+	beqz	r1,L6_LF0
 	nop; not filled.
 	addi	r3,r30,#-24
-	add	r7,r0,r6
+	add	r8,r0,r6
 	add	r6,r0,r9
-L20_LF0:
+L8_LF0:
 	addi	r29,r29,#-8
 	sw	(r29),r2
 	sw	4(r29),r3
 	jal	_ditoa
 	nop; not filled.
+	lhi	r10,((LC3_LF0)>>16)&0xffff
+	addui	r10,r10,(LC3_LF0)&0xffff
+	sw	(r29),r10
+	sw	4(r29),r2
+	jal	_Printf
+	nop; not filled.
 	addi	r29,r29,#-24
-	addi	r2,r2,#1
-	sw	(r29),r2
+	addi	r10,r0,#4
+	sw	(r29),r10
 	addi	r10,r0,#0
 	sw	4(r29),r10
-	lhi	r10,((LC2_LF0)>>16)&0xffff
-	addui	r10,r10,(LC2_LF0)&0xffff
+	lhi	r10,((LC4_LF0)>>16)&0xffff
+	addui	r10,r10,(LC4_LF0)&0xffff
 	sw	8(r29),r10
 	sw	12(r29),r3
-	sw	16(r29),r7
+	sw	16(r29),r8
 	sw	20(r29),r6
 	addi	r10,r0,#0
 	sw	24(r29),r10
 	jal	_process_create
 	nop; not filled.
 	addi	r29,r29,#32
+	addi	r2,r2,#1
 	slt	r1,r2,r4
-	bnez	r1,L20_LF0
+	bnez	r1,L8_LF0
 	nop; not filled.
-L18_LF0:
+L6_LF0:
 	addi	r29,r29,#-8
-	sw	(r29),r8
+	sw	(r29),r7
 	jal	_sem_wait
 	nop; not filled.
 	addi	r10,r0,#1
 	sw	(r5),r10
 	addi	r29,r29,#8
-	j	L14_LF0
+	j	L2_LF0
 	nop; not filled.
-L22_LF0:
-	addi	r29,r29,#-16
+L10_LF0:
+	addi	r29,r29,#-8
+	lhi	r10,((LC5_LF0)>>16)&0xffff
+	addui	r10,r10,(LC5_LF0)&0xffff
+	sw	(r29),r10
+	jal	_Printf
+	nop; not filled.
+	addi	r29,r29,#-8
 	lw	r10,4(r3)
 	sw	(r29),r10
 	addi	r10,r0,#0
@@ -242,7 +199,7 @@ L22_LF0:
 	sw	8(r29),r10
 	jal	_dstrtol
 	nop; not filled.
-	add	r8,r0,r1
+	add	r7,r0,r1
 	lw	r3,12(r3)
 	sw	(r29),r3
 	addi	r10,r0,#0
@@ -257,34 +214,34 @@ L22_LF0:
 	add	r5,r0,r1
 	addi	r29,r29,#16
 	snei	r1,r5,#0
-	bnez	r1,L23_LF0
+	bnez	r1,L11_LF0
 	nop; not filled.
 	addi	r29,r29,#-8
-	lhi	r10,((LC3_LF0)>>16)&0xffff
-	addui	r10,r10,(LC3_LF0)&0xffff
+	lhi	r10,((LC6_LF0)>>16)&0xffff
+	addui	r10,r10,(LC6_LF0)&0xffff
 	sw	(r29),r10
 	jal	_Printf
 	nop; not filled.
 	jal	_exit
 	nop; not filled.
-L23_LF0:
+L11_LF0:
 	addi	r2,r0,#0
 	lw	r1,(r5)
 	snei	r1,r1,#0
-	bnez	r1,L25_LF0
+	bnez	r1,L13_LF0
 	nop; not filled.
 	addui	r3,r0,#49999
 	addi	r4,r4,#65
-L27_LF0:
+L15_LF0:
 	addi	r31,r0,#0
-L30_LF0:
+L18_LF0:
 	addi	r31,r31,#1
 	sle	r1,r31,r3
-	bnez	r1,L30_LF0
+	bnez	r1,L18_LF0
 	nop; not filled.
 	addi	r29,r29,#-16
-	lhi	r10,((LC4_LF0)>>16)&0xffff
-	addui	r10,r10,(LC4_LF0)&0xffff
+	lhi	r10,((LC7_LF0)>>16)&0xffff
+	addui	r10,r10,(LC7_LF0)&0xffff
 	sw	(r29),r10
 	sw	4(r29),r4
 	sw	8(r29),r2
@@ -292,37 +249,37 @@ L30_LF0:
 	nop; not filled.
 	addi	r29,r29,#16
 	sgti	r1,r2,#200
-	beqz	r1,L26_LF0
+	beqz	r1,L14_LF0
 	nop; not filled.
 	addi	r29,r29,#-8
-	sw	(r29),r8
+	sw	(r29),r7
 	jal	_sem_signal
 	nop; not filled.
 	addi	r29,r29,#8
-L26_LF0:
+L14_LF0:
 	addi	r2,r2,#1
 	lw	r1,(r5)
 	snei	r1,r1,#0
-	beqz	r1,L27_LF0
+	beqz	r1,L15_LF0
 	nop; not filled.
-L25_LF0:
+L13_LF0:
 	jal	_getpid
 	nop; not filled.
 	addi	r29,r29,#-16
-	lhi	r10,((LC5_LF0)>>16)&0xffff
-	addui	r10,r10,(LC5_LF0)&0xffff
+	lhi	r10,((LC8_LF0)>>16)&0xffff
+	addui	r10,r10,(LC8_LF0)&0xffff
 	sw	(r29),r10
 	sw	4(r29),r1
 	sw	8(r29),r2
 	jal	_Printf
 	nop; not filled.
 	addi	r29,r29,#16
-	j	L14_LF0
+	j	L2_LF0
 	nop; not filled.
-L35_LF0:
+L23_LF0:
 	addi	r29,r29,#-8
-	lhi	r10,((LC6_LF0)>>16)&0xffff
-	addui	r10,r10,(LC6_LF0)&0xffff
+	lhi	r10,((LC9_LF0)>>16)&0xffff
+	addui	r10,r10,(LC9_LF0)&0xffff
 	sw	(r29),r10
 	jal	_Printf
 	nop; not filled.
@@ -330,20 +287,20 @@ L35_LF0:
 	sw	(r29),r3
 	jal	_Printf
 	nop; not filled.
-	lhi	r10,((LC7_LF0)>>16)&0xffff
-	addui	r10,r10,(LC7_LF0)&0xffff
+	lhi	r10,((LC10_LF0)>>16)&0xffff
+	addui	r10,r10,(LC10_LF0)&0xffff
 	sw	(r29),r10
 	jal	_Printf
 	nop; not filled.
-	lhi	r10,((LC8_LF0)>>16)&0xffff
-	addui	r10,r10,(LC8_LF0)&0xffff
+	lhi	r10,((LC11_LF0)>>16)&0xffff
+	addui	r10,r10,(LC11_LF0)&0xffff
 	sw	(r29),r10
 	sw	4(r29),r2
 	jal	_Printf
 	nop; not filled.
 	jal	_exit
 	nop; not filled.
-L14_LF0:
+L2_LF0:
 	jal	_exit
 	nop
 .endproc _main

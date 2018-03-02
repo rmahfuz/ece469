@@ -5,4 +5,4 @@ clean:
 	cd userprog; make clean
 
 run:
-	cd ../../bin; dlxsim -x os.dlx.obj -a  -u userprog4.dlx.obj 2; ee469_fixterminal
+	cd ../../bin; dlxsim -x os.dlx.obj -a -u userprog4.dlx.obj 2; ee469_fixterminal

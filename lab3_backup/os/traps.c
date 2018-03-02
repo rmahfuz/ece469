@@ -188,6 +188,7 @@ static void TrapProcessCreateHandler(uint32 *trapArgs, int sysmode) {
   }
 
   ProcessFork(0, (uint32)allargs, pnice, pinfo, name, 1);
+	dbprintf ('i',"TrapProcessCreateHandler: calling ProcessFork with name = %s\n", name);
 }
 
 

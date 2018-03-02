@@ -1,5 +1,5 @@
-#include "../../../include/misc.h"
-#include "../../../include/usertraps.h"
+//#include "../../../include/misc.h"
+//#include "../../../include/usertraps.h"
 #include "lab2-api.h"
 
 /*
@@ -23,6 +23,7 @@ main (int argc, char *argv[])
   switch(argc)
   {
     case 2:  
+			Printf("userprog4.c: Just entered case 2\n");
       handle = shmget();
       db = (DB *)shmat(handle);
       if(db == NULL)
@@ -42,7 +43,8 @@ main (int argc, char *argv[])
       for(i = 0; i < number; i++)
       {
         ditoa(i, num_str);
-        process_create(1 + i, 0, "userprog4.dlx.obj", num_str, 
+				Printf("userprog4.c: In case 2: going to create process %d \n", i);
+        process_create(i+1, 0, "userprog4.dlx.obj", num_str, 
                        spage_str, handle_str, NULL);     // different p_nice for child process
       }
 
@@ -51,6 +53,7 @@ main (int argc, char *argv[])
 
       break;
     case 4:
+			Printf("userprog4.c: Just entered case 4\n");
       offset = dstrtol(argv[1], NULL, 10);
       spage = dstrtol(argv[2], NULL, 10);
       handle = dstrtol(argv[3], NULL, 10);

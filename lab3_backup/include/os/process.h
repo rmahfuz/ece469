@@ -31,7 +31,7 @@
 #define	PROCESS_TYPE_USER	0x200
 
 #define LT_SCHED
-#define DYNAMIC_SCHED
+//#define DYNAMIC_SCHED
 
 typedef	void (*VoidFunc)();
 

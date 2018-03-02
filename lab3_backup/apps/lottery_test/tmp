@@ -1,0 +1,241 @@
+cd ../../bin; dlxsim -x os.dlx.obj -a -u userprog4.dlx.obj 2; ee469_fixterminal
+Stack=0x1fffc8, pc starting at 0x10d1c
+Got 3 arguments.
+Available memory: 0x1ee88 -> 0x200000.
+Argument count is 3.
+Argument 0 is -u.
+Argument 1 is userprog4.dlx.obj.
+Argument 2 is 2.
+About to initialize queues.
+After initializing queues.
+After initializing memory.
+ProcessModuleInit: function started
+Initializing PCB 0 @ 0x1b548.
+Initializing PCB 1 @ 0x1b60c.
+Initializing PCB 2 @ 0x1b6d0.
+Initializing PCB 3 @ 0x1b794.
+Initializing PCB 4 @ 0x1b858.
+Initializing PCB 5 @ 0x1b91c.
+Initializing PCB 6 @ 0x1b9e0.
+Initializing PCB 7 @ 0x1baa4.
+Initializing PCB 8 @ 0x1bb68.
+Initializing PCB 9 @ 0x1bc2c.
+Initializing PCB 10 @ 0x1bcf0.
+Initializing PCB 11 @ 0x1bdb4.
+Initializing PCB 12 @ 0x1be78.
+Initializing PCB 13 @ 0x1bf3c.
+Initializing PCB 14 @ 0x1c000.
+Initializing PCB 15 @ 0x1c0c4.
+Initializing PCB 16 @ 0x1c188.
+Initializing PCB 17 @ 0x1c24c.
+Initializing PCB 18 @ 0x1c310.
+Initializing PCB 19 @ 0x1c3d4.
+Initializing PCB 20 @ 0x1c498.
+Initializing PCB 21 @ 0x1c55c.
+Initializing PCB 22 @ 0x1c620.
+Initializing PCB 23 @ 0x1c6e4.
+Initializing PCB 24 @ 0x1c7a8.
+Initializing PCB 25 @ 0x1c86c.
+Initializing PCB 26 @ 0x1c930.
+Initializing PCB 27 @ 0x1c9f4.
+Initializing PCB 28 @ 0x1cab8.
+Initializing PCB 29 @ 0x1cb7c.
+Initializing PCB 30 @ 0x1cc40.
+Initializing PCB 31 @ 0x1cd04.
+ProcessFork (153391118): function started
+Entering ProcessFork args=0x4c34 0x0 idle_proc 0
+Got a link @ 0x1d128
+ProcessFork: Copying process name (idle_proc) to pcb
+Setting up PCB @ 0x1cd04 (sys stack=0x30000, mem=0x20001, size=0x10000)
+Setting currentPCB=0x1cd04, stackframe=0x3fe8c
+Leaving ProcessFork (idle_proc)
+ProcessFork (31): function complete
+ProcessModuleInit: function complete
+After initializing processes.
+Entering ProcessModuleInit
+Leaving ProcessModuleInit
+After initializing shared memory.
+SynchModuleInit: Entering SynchModuleInit
+SynchModuleInit: Leaving SynchModuleInit
+After initializing synchronization tools.
+After initializing keyboard.
+VM Descriptor is 0
+main: Calling process_create with 2 parameters
+main: params0 = userprog4.dlx.obj, params1 = 2 
+ProcessFork (153391118): function started
+Entering ProcessFork args=0x0 0x1ffad8 userprog4.dlx.obj 1
+Got a link @ 0x1d118
+ProcessFork: Copying process name (userprog4.dlx.obj) to pcb
+Setting up PCB @ 0x1cc40 (sys stack=0x50000, mem=0x40001, size=0x10000)
+About to load userprog4.dlx.obj
+File userprog4.dlx.obj -> start=0x00001000
+File userprog4.dlx.obj -> code @ 0x00001000 (size=0x000012c8)
+File userprog4.dlx.obj -> data @ 0x00003000 (size=0x00000177)
+Placing 34 bytes at vaddr 00003000.
+Placing 61 bytes at vaddr 00003024.
+Placing 21 bytes at vaddr 00003064.
+Placing 53 bytes at vaddr 0000307c.
+Placing 18 bytes at vaddr 000030b4.
+Placing 34 bytes at vaddr 000030c8.
+Placing 61 bytes at vaddr 000030ec.
+Placing 6 bytes at vaddr 0000312c.
+Placing 35 bytes at vaddr 00003134.
+Placing 8 bytes at vaddr 00003158.
+Placing 9 bytes at vaddr 00003160.
+Placing 11 bytes at vaddr 0000316c.
+Placing 76 bytes at vaddr 00001000.
+Placing 80 bytes at vaddr 0000104c.
+Placing 80 bytes at vaddr 0000109c.
+Placing 80 bytes at vaddr 000010ec.
+Placing 80 bytes at vaddr 0000113c.
+Placing 80 bytes at vaddr 0000118c.
+Placing 80 bytes at vaddr 000011dc.
+Placing 80 bytes at vaddr 0000122c.
+Placing 80 bytes at vaddr 0000127c.
+Placing 80 bytes at vaddr 000012cc.
+Placing 80 bytes at vaddr 0000131c.
+Placing 80 bytes at vaddr 0000136c.
+Placing 80 bytes at vaddr 000013bc.
+Placing 80 bytes at vaddr 0000140c.
+Placing 80 bytes at vaddr 0000145c.
+Placing 80 bytes at vaddr 000014ac.
+Placing 80 bytes at vaddr 000014fc.
+Placing 80 bytes at vaddr 0000154c.
+Placing 80 bytes at vaddr 0000159c.
+Placing 80 bytes at vaddr 000015ec.
+Placing 80 bytes at vaddr 0000163c.
+Placing 80 bytes at vaddr 0000168c.
+Placing 80 bytes at vaddr 000016dc.
+Placing 80 bytes at vaddr 0000172c.
+Placing 80 bytes at vaddr 0000177c.
+Placing 80 bytes at vaddr 000017cc.
+Placing 80 bytes at vaddr 0000181c.
+Placing 80 bytes at vaddr 0000186c.
+Placing 80 bytes at vaddr 000018bc.
+Placing 80 bytes at vaddr 0000190c.
+Placing 80 bytes at vaddr 0000195c.
+Placing 80 bytes at vaddr 000019ac.
+Placing 80 bytes at vaddr 000019fc.
+Placing 80 bytes at vaddr 00001a4c.
+Placing 80 bytes at vaddr 00001a9c.
+Placing 80 bytes at vaddr 00001aec.
+Placing 80 bytes at vaddr 00001b3c.
+Placing 80 bytes at vaddr 00001b8c.
+Placing 80 bytes at vaddr 00001bdc.
+Placing 80 bytes at vaddr 00001c2c.
+Placing 80 bytes at vaddr 00001c7c.
+Placing 80 bytes at vaddr 00001ccc.
+Placing 80 bytes at vaddr 00001d1c.
+Placing 80 bytes at vaddr 00001d6c.
+Placing 80 bytes at vaddr 00001dbc.
+Placing 80 bytes at vaddr 00001e0c.
+Placing 80 bytes at vaddr 00001e5c.
+Placing 80 bytes at vaddr 00001eac.
+Placing 80 bytes at vaddr 00001efc.
+Placing 80 bytes at vaddr 00001f4c.
+Placing 80 bytes at vaddr 00001f9c.
+Placing 80 bytes at vaddr 00001fec.
+Placing 80 bytes at vaddr 0000203c.
+Placing 80 bytes at vaddr 0000208c.
+Placing 80 bytes at vaddr 000020dc.
+Placing 80 bytes at vaddr 0000212c.
+Placing 80 bytes at vaddr 0000217c.
+Placing 80 bytes at vaddr 000021cc.
+Placing 80 bytes at vaddr 0000221c.
+Placing 80 bytes at vaddr 0000226c.
+Placing 12 bytes at vaddr 000022bc.
+Put PCB @ 0x1cc40 into runQueue
+Setting currentPCB=0x1cc40, stackframe=0x5fe8c
+Leaving ProcessFork (userprog4.dlx.obj)
+ProcessFork (30): function complete
+process_create: calling ProcessFork with name = userprog4.dlx.obj
+Interrupt cause=0x8000201 iar=0x1414 isr=0x100 args=0x0000fbb0.
+Got a printf trap!
+userprog4.c: Just entered case 2
+About to return from dointerrupt.
+Interrupt cause=0x40 iar=0x1414 isr=0x100 args=0x0000fbb0.
+Got a timer interrupt!
+About to return from dointerrupt.
+Interrupt cause=0x8000440 iar=0x1438 isr=0x100 args=0x0000fbb0.
+About to return from dointerrupt.
+Interrupt cause=0x40 iar=0x1438 isr=0x100 args=0x0000fbb0.
+Got a timer interrupt!
+About to return from dointerrupt.
+Interrupt cause=0x8000441 iar=0x1444 isr=0x100 args=0x0000fbb0.
+About to return from dointerrupt.
+Interrupt cause=0x40 iar=0x1444 isr=0x100 args=0x0000fbb0.
+Got a timer interrupt!
+About to return from dointerrupt.
+Interrupt cause=0x8000450 iar=0x1450 isr=0x100 args=0x0000fbb0.
+About to return from dointerrupt.
+Interrupt cause=0x40 iar=0x1450 isr=0x100 args=0x0000fbb0.
+Got a timer interrupt!
+About to return from dointerrupt.
+Interrupt cause=0x8000201 iar=0x1414 isr=0x100 args=0x0000fba8.
+Got a printf trap!
+Setting number = 2
+About to return from dointerrupt.
+Interrupt cause=0x40 iar=0x1414 isr=0x100 args=0x0000fba8.
+Got a timer interrupt!
+About to return from dointerrupt.
+Interrupt cause=0x8000201 iar=0x1414 isr=0x100 args=0x0000fbb0.
+Got a printf trap!
+userprog4.c: In case 2: going to create process 0 
+About to return from dointerrupt.
+Interrupt cause=0x40 iar=0x1414 isr=0x100 args=0x0000fbb0.
+Got a timer interrupt!
+About to return from dointerrupt.
+Interrupt cause=0x8000432 iar=0x142c isr=0x100 args=0x0000fb98.
+TrapProcessCreateHandler: function started
+TrapProcessCreateHandler: creating user process
+TrapProcessCreateHandler: just parsed executable name () from trapArgs
+ProcessFork (30): function started
+Entering ProcessFork args=0x0 0x5fa14  1
+Got a link @ 0x1d108
+ProcessFork: Copying process name () to pcb
+Setting up PCB @ 0x1cb7c (sys stack=0x80000, mem=0x70001, size=0x10000)
+About to load 
+ProcessFreeResources: function started
+ProcessFreeResources: function complete
+TrapProcessCreateHandler: calling ProcessFork with name = 
+About to return from dointerrupt.
+Interrupt cause=0x40 iar=0x142c isr=0x100 args=0x0000fb98.
+Got a timer interrupt!
+About to return from dointerrupt.
+Interrupt cause=0x8000201 iar=0x1414 isr=0x100 args=0x0000fbb0.
+Got a printf trap!
+userprog4.c: In case 2: going to create process 1 
+About to return from dointerrupt.
+Interrupt cause=0x40 iar=0x1414 isr=0x100 args=0x0000fbb0.
+Got a timer interrupt!
+About to return from dointerrupt.
+Interrupt cause=0x8000432 iar=0x142c isr=0x100 args=0x0000fb98.
+TrapProcessCreateHandler: function started
+TrapProcessCreateHandler: creating user process
+TrapProcessCreateHandler: just parsed executable name () from trapArgs
+ProcessFork (30): function started
+Entering ProcessFork args=0x0 0x5fa14  1
+Got a link @ 0x1d0f8
+ProcessFork: Copying process name () to pcb
+Setting up PCB @ 0x1cab8 (sys stack=0x80000, mem=0x70001, size=0x10000)
+About to load 
+ProcessFreeResources: function started
+ProcessFreeResources: function complete
+TrapProcessCreateHandler: calling ProcessFork with name = 
+About to return from dointerrupt.
+Interrupt cause=0x40 iar=0x142c isr=0x100 args=0x0000fb98.
+Got a timer interrupt!
+About to return from dointerrupt.
+Interrupt cause=0x8000451 iar=0x145c isr=0x100 args=0x0000fbb0.
+Interrupt cause=0x8000410 iar=0x10ff4 isr=0x14f args=0x0005fde4.
+Got a process sleep trap!
+ProcessSuspend (30): function started
+ProcessSuspend (30): function complete
+Now entering ProcessSchedule (cur=0x1cc40, 0 ready)
+FATAL ERROR: no runnable processes, but there are sleeping processes waiting!
+Sleeping process 0: PID = 30
+Exiting at program request.
+Instructions executed: 3543017
+Time simulated: 3.543 secs
+Real time elapsed: 0.130 secs
+Execution rate: 27.28M simulated instructions per real second.
