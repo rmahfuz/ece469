@@ -32,6 +32,7 @@
 
 #define LT_SCHED
 //#define DYNAMIC_SCHED
+//#define RR_SCHED
 
 typedef	void (*VoidFunc)();
 
