@@ -1163,7 +1163,7 @@ void ProcessUserSleep(int seconds) {
   // Your code here
   //currentPCB->auto_wake_up = 1;
 	dbprintf ('p',"ProcessUserSleep: Put PID %d to sleep for %d seconds\n", GetPidFromAddress(currentPCB), seconds);
-  currentPCB->auto_sleep_time = seconds;
+  currentPCB->auto_sleep_time = seconds * 1000;
   currentPCB->last_sleep_time = ClkGetCurTime();
   ProcessSuspend(currentPCB);
 }
