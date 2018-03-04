@@ -4,8 +4,10 @@
 'make run' from apps/<desired_dir>
 where <desired_dir> is 'q2' for question 2, and 'lottery_test' for questions 3, 4 and 5.
 
-2) RR_SCHED, LT_SCHED and DYNAMIC_SCHED are macros that can be enabled/disabled as needed in include/os/process.h for round-robin scheduling, lottery-scheduling and dynmaic scheduling functionalities respectively.
+2) 
+a) RR_SCHED, LT_SCHED and DYNAMIC_SCHED are macros that can be enabled/disabled as needed in include/os/process.h for round-robin scheduling, lottery-scheduling and dynmaic scheduling functionalities respectively.
 Dynamic scheduling functionality is implemented in calcDynamicProcPriorityi(PCB*) function in os/process.c
- q2 did not work with lottery scgeduling (only worked with round-robin scheduling)
+b) q2 did not work with lottery scgeduling (only worked with round-robin scheduling)
+c) q2 does not work with larger numbers of h2o and so4 because a large number of processes would require too much memory.
 
 3) Geeksforgeeks operating systems notes
