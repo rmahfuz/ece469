@@ -152,7 +152,7 @@ void ProcessFreeResources (PCB *pcb) {
   // Your code for closing any open mailbox connections
   // that a dying process might have goes here.
   //-----------------------------------------------------
-	//MboxCloseAllByPid(GetPidFromAddress(pcb));
+	MboxCloseAllByPid(GetPidFromAddress(pcb));
 
 
   // Allocate a new link for this pcb on the freepcbs queue
@@ -393,7 +393,7 @@ void awakenSleepingAutoWakeProcs() { // if they have slept more than their auto-
 	}
 }
 /////////////////////////////////////////////////////////////////////////////////
- void calcDynamicProcPriority(PCB* pcb) {  // id I/O-bound process, increase the priority. Else decrease priority (if I/O-bound processes exist)
+ void calcDynamicProcPriority(PCB* pcb) {  // if I/O-bound process, increase the priority. Else decrease priority (if I/O-bound processes exist)
 	int duration = ClkGetCurJiffies() - pcb->last_start_time;
   dbprintf ('p', "calcDynamicProcPriority: highPriorityProcessExists = %d\n", highPriorityProcessExists);
 	if (duration < 0.85 * CLOCK_PROCESS_JIFFIES && pcb->pnice < 19) { // if the process stopped before using all of the CPU time
