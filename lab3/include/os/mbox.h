@@ -9,22 +9,26 @@
 #define MBOX_FAIL -1
 #define MBOX_SUCCESS 1
 
+#include "queue.h"
+#include "process.h"
+#include "synch.h"
+
 //---------------------------------------------
 // Define your mailbox structures here
 //--------------------------------------------
 
 typedef struct mbox_message {
-	//buffer[MAX_MSG_LENGTH];
+	char* buffer;//[MBOX_MAX_MESSAGE_LENGTH];
 	int length;
 	int inuse;
 } mbox_message;
 
 typedef struct mbox {
 	Queue msg_queue;
-	Lock lock_handle;
-	Cond notFull;
-	Cond notEmpty;
-	//procs[MAX_PROCS]
+	lock_t lock;
+	cond_t notFull;
+	cond_t notEmpty;
+	int procs[PROCESS_MAX_PROCS];
 	int inuse;
 } mbox;
 
@@ -50,4 +54,4 @@ int MboxCloseAllByPid(int pid);
 #define true 1
 #endif
 
-#endif  // ending definition of __MBOX_OS__
+#endif
