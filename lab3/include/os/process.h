@@ -30,6 +30,9 @@
 #define	PROCESS_TYPE_SYSTEM	0x100
 #define	PROCESS_TYPE_USER	0x200
 
+#define LT_SCHED
+//#define DYNAMIC_SCHED
+
 typedef	void (*VoidFunc)();
 
 // Process control block
@@ -45,6 +48,11 @@ typedef struct PCB {
 
   int           pinfo;          // Turns on printing of runtime stats
   int           pnice;          // Used in priority calculation
+	int jiffies;  // total number of jiffies for which this process is running
+	int last_start_time;
+	int yield;
+	int auto_sleep_time;  //-1 if auto-sleep is disabled
+	int last_sleep_time;   // what time the process is going to sleep, -1 if invalid
 } PCB;
 
 // Offsets of various registers from the stack pointer in the register
@@ -72,9 +80,26 @@ typedef struct PCB {
 #define PROCESS_QUANTUM_JIFFIES  CLOCK_PROCESS_JIFFIES
 
 // Use this format string for printing CPU stats
-#define PROCESS_CPUSTATS_FORMAT "CPUStats: Process %d has run for %d jiffies, prio = %d\n"
+#define PROCESS_CPUSTATS_FORMAT "CPUStats: Process %d has run for %d jiffies, priority = %d\n"
 
 extern PCB	*currentPCB;
+
+extern int total_tickets;
+extern PCB * idlePCB;
+extern int highPriorityProcessExists;
+// Static Lottery Scheduling  Implementation
+extern PCB * selectRandomProc();
+
+// Dynamic Scheduling Lottery Implementation
+extern void calcDynamicProcPriority(PCB * );
+
+// Auotwake sleep process implementation methods
+int chkForSleepingAutoWakeProcess(int*);
+void awakenSleepingAutoWakeProcs();
+
+//random number generators
+extern int random();
+extern void srandom(unsigned int);
 
 int ProcessFork (VoidFunc func, uint32 param, int pnice, int pinfo,char *name, int isUser);
 extern void	ProcessSchedule ();

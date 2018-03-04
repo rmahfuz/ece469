@@ -1,4 +1,4 @@
-#ifndef __MBOX_OS:__
+#ifndef __MBOX_OS__
 #define __MBOX_OS__
 
 #define MBOX_NUM_MBOXES 16           // Maximum number of mailboxes allowed in the system
@@ -50,4 +50,4 @@ int MboxCloseAllByPid(int pid);
 #define true 1
 #endif
 
-#endif
+#endif  // ending definition of __MBOX_OS__

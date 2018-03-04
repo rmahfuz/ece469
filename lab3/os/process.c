@@ -20,7 +20,16 @@
 
 // Pointer to the current PCB.  This is used by the assembly language
 // routines for context switches.
-PCB		*currentPCB;
+PCB		*currentPCB, *idlePCB;
+int idlePID;
+
+//number of tockets given to user processes
+static int total_tickets;
+
+//info about presence of processes requiring high priority for dynamic lottery scheduling
+static int highPriorityProcessExists;
+//int lastHighPriorityPID;
+//static unsigned int highPriorityProcElapsed;
 
 // List of free PCBs.
 static Queue	freepcbs;
@@ -50,6 +59,16 @@ int ProcessGetCodeInfo(const char *file, uint32 *startAddr, uint32 *codeStart, u
 int ProcessGetFromFile(int fd, unsigned char *buf, uint32 *addr, int max);
 uint32 get_argument(char *string);
 
+void ProcessIdle() { while(1); }
+
+void printQueue(Queue * q) {
+  Link* l = AQueueFirst(q); PCB * pcb; int cnt = 0;
+  for(cnt = 0; cnt < AQueueLength(q); cnt++) {
+    pcb = (PCB *)AQueueObject(l);
+    printf("Process name : %s, PID: %d, Number of tickets : %d, pnice : %d, Autowakeup: %d\n", pcb->name, GetPidFromAddress(pcb), pcb->pnice, pcb->pinfo, (pcb->auto_sleep_time != -1));
+    l = AQueueNext(l);
+  }
+}
 
 
 //----------------------------------------------------------------------
@@ -79,12 +98,24 @@ void ProcessModuleInit () {
     }
     // Next, set the pcb to be available
     pcbs[i].flags = PROCESS_STATUS_FREE;
+		pcbs[i].jiffies = 0;
+		pcbs[i].yield = 0;
+		pcbs[i].auto_sleep_time = -1;
+		pcbs[i].last_start_time = 0;
+		pcbs[i].last_sleep_time = 0;
     // Finally, insert the link into the queue
     if (AQueueInsertFirst(&freepcbs, pcbs[i].l) != QUEUE_SUCCESS) {
       printf("FATAL ERROR: could not insert PCB link into queue in ProcessModuleInit!\n");
       exitsim();
     }
   }
+	total_tickets = 0;
+	srandom(10);
+	highPriorityProcessExists = 0;
+
+	idlePID = ProcessFork (&ProcessIdle,            0,         0,         0, "idle_proc", 0         );
+											//VoidFunc func, uint32 param, int pnice, int pinfo, char* name , int isUser
+
   // There are no processes running at this point, so currentPCB=NULL
   currentPCB = NULL;
   dbprintf ('p', "ProcessModuleInit: function complete\n");
@@ -121,6 +152,7 @@ void ProcessFreeResources (PCB *pcb) {
   // Your code for closing any open mailbox connections
   // that a dying process might have goes here.
   //-----------------------------------------------------
+	//MboxCloseAllByPid(GetPidFromAddress(pcb));
 
 
   // Allocate a new link for this pcb on the freepcbs queue
@@ -196,10 +228,14 @@ void ProcessSetResult (PCB * pcb, uint32 result) {
 void ProcessSchedule () {
   PCB *pcb=NULL;
   int i=0;
+	int tmp_pnice = 0;
   Link *l=NULL;
+  int num_sleeping_procs;
 
   dbprintf ('p', "Now entering ProcessSchedule (cur=0x%x, %d ready)\n",
 	    (int)currentPCB, AQueueLength (&runQueue));
+
+	#ifdef RR_SCHED 
   // The OS exits if there's no runnable process.  This is a feature, not a
   // bug.  An easy solution to allowing no runnable "user" processes is to
   // have an "idle" process that's simply an infinite loop.
@@ -217,15 +253,86 @@ void ProcessSchedule () {
     printf ("No runnable processes - exiting!\n");
     exitsim ();	// NEVER RETURNS
   }
-
+  // if runQueue is not empty:
   // Move the front of the queue to the end.  The running process was the one in front.
-  AQueueMoveAfter(&runQueue, AQueueLast(&runQueue), AQueueFirst(&runQueue));
+  AQueueMoveAfter(&runQueue, AQueueLast(&runQueue), AQueueFirst(&runQueue));  //modify runQueue
 
   // Now, run the one at the head of the queue.
-  pcb = (PCB *)AQueueObject(AQueueFirst(&runQueue));
+  pcb = (PCB *)AQueueObject(AQueueFirst(&runQueue));  //modify currentPCB
   currentPCB = pcb;
   dbprintf ('p',"About to switch to PCB 0x%x,flags=0x%x @ 0x%x\n",
 	    (int)pcb, pcb->flags, (int)(pcb->sysStackPtr[PROCESS_STACK_IAR]));
+  #endif   //ending RR_SCHED
+
+	if(currentPCB->pinfo)
+	  printf(PROCESS_CPUSTATS_FORMAT, (int)(currentPCB-pcbs), currentPCB->jiffies, currentPCB->pnice);
+
+   //Updating currentPCB's CPU utilization statistics (part 4)
+    currentPCB->jiffies += (ClkGetCurJiffies() - currentPCB->last_start_time);
+
+
+	#ifdef LT_SCHED
+  if (AQueueEmpty(&runQueue)) { //if there are no processes on the run queue
+    if (!AQueueEmpty(&waitQueue)) {  //but there are processes in wait queue
+		if(chkForSleepingAutoWakeProcess(&num_sleeping_procs)) { //if there are autowake processes in the wait queue
+				if(num_sleeping_procs == 0) {  //if there are no processes to be woken up yet, go with the idle process
+					currentPCB = &pcbs[idlePID];
+				}
+			}
+			else {                                                  // if there are no autowake processes in wait queue
+				printf("FATAL ERROR: no runnable processes, but there are sleeping processes waiting!\n");
+				l = AQueueFirst(&waitQueue);
+				while (l != NULL) {
+					pcb = AQueueObject(l);
+					printf("Sleeping process %d: ", i++); printf("PID = %d\n", (int)(pcb - pcbs));
+					l = AQueueNext(l);
+					exitsim();
+				}
+			}
+		}
+		else { // both runQueue and waitQueue empty
+			printf ("No runnable processes - exiting!\n");
+			exitsim (); // NEVER RETURNS
+		}
+	}
+	//else {    // if runQueue is not empty:
+
+   #ifdef DYNAMIC_SCHED
+  if(!currentPCB->yield && currentPCB->auto_sleep_time == -1)   // if not yeild and not auto-sleep
+		calcDynamicProcPriority(currentPCB);      // updating tickets of currentPCB
+	#endif //ending DYNAMIC_SCHED
+
+     //Remove current PCB from Scheduling if yield is true
+    if(currentPCB->yield && AQueueLength(&runQueue) > 1) {
+			total_tickets -= currentPCB->pnice;
+			tmp_pnice = currentPCB->pnice;
+			currentPCB->pnice = 0;
+		}
+
+	// Awaken autowake processes in waitQueue
+	awakenSleepingAutoWakeProcs();
+
+    //if(AQueueLength(&runQueue) > 0) //is this even a necessary check?
+      pcb = selectRandomProc();
+       
+		if (pcb) { 
+      //Put current yeilding process back in Run Queue
+      if(currentPCB->yield == 1) {
+        currentPCB->yield = 0;
+        if(AQueueLength(&runQueue) > 1) {   //not sure about this
+					total_tickets += currentPCB->pnice;
+					currentPCB->pnice = tmp_pnice;
+				}
+      }
+      
+      currentPCB = pcb;   // modifying currentPCB, prepping for execution of this
+      pcb->last_start_time = ClkGetCurJiffies();
+      dbprintf ('p',"Going to switch to PCB 0x%x,flags=0x%x @ 0x%x\n",
+      (int)pcb, pcb->flags, (int)(pcb->sysStackPtr[PROCESS_STACK_IAR]));
+    }
+
+	#endif //ending LT_SCHED
+	//}
 
   // Clean up zombie processes here.  This is done at interrupt time
   // because it can't be done while the process might still be running
@@ -240,7 +347,73 @@ void ProcessSchedule () {
   }
   dbprintf ('p', "Leaving ProcessSchedule (cur=0x%x)\n", (int)currentPCB);
 }
-
+/////////////////////////////////////////////////////////////////////////////////
+//Finds auto-wake processes in the wait queue
+int chkForSleepingAutoWakeProcess(int* num_sleeping_procs) {
+	int i = 0; int found = 0;
+	PCB * pcb = (PCB *)AQueueObject(AQueueFirst(&waitQueue));
+	*num_sleeping_procs = 0;
+	for (i = 0; i < AQueueLength(&waitQueue); i++) { //look at each proc in waitQueue
+		if(pcb->auto_sleep_time != -1) {
+			found = 1;
+		  if((ClkGetCurJiffies() - pcb->last_sleep_time) >=pcb->auto_sleep_time) // if ready to wake up
+			*num_sleeping_procs += 1;
+		}
+		pcb = (PCB* )AQueueObject(AQueueNext(pcb->l));
+	}
+	return found;
+}
+/////////////////////////////////////////////////////////////////////////////////
+PCB* selectRandomProc() { //from runQueue for lottery-based scheduling
+	PCB* pcb = NULL; int cum_priority = 0;
+	int rand_priority = random() % total_tickets;
+	//int rand_priority = random() % 3;
+	for (; cum_priority<rand_priority; cum_priority += pcb->pnice){
+		if (pcb == NULL)
+			pcb = (PCB*)AQueueObject(AQueueFirst(&runQueue));
+		else
+			pcb = (PCB*)AQueueObject(AQueueNext(pcb->l));
+	}
+	dbprintf('n', "Chosen pid = %d, pnice = %d\n", (int)(pcb-pcbs), pcb->pnice);
+	return pcb;
+}
+/////////////////////////////////////////////////////////////////////////////////
+void awakenSleepingAutoWakeProcs() { // if they have slept more than their auto-sleep time
+	PCB* pcb = (PCB*)AQueueObject(AQueueFirst(&waitQueue)); int i;
+	for (i = 0; i < AQueueLength(&waitQueue); i++) {
+		if (i == 0)
+			pcb = (PCB*)AQueueObject(AQueueFirst(&waitQueue));
+		else
+			pcb = (PCB*)AQueueObject(AQueueNext(pcb->l));
+
+		if ((pcb->auto_sleep_time != -1) && (int)(ClkGetCurJiffies()-pcb->last_sleep_time) >= pcb->auto_sleep_time) {
+			pcb->auto_sleep_time = -1;
+			ProcessWakeup(pcb);
+		}
+	}
+}
+/////////////////////////////////////////////////////////////////////////////////
+ void calcDynamicProcPriority(PCB* pcb) {  // id I/O-bound process, increase the priority. Else decrease priority (if I/O-bound processes exist)
+	int duration = ClkGetCurJiffies() - pcb->last_start_time;
+  dbprintf ('p', "calcDynamicProcPriority: highPriorityProcessExists = %d\n", highPriorityProcessExists);
+	if (duration < 0.85 * CLOCK_PROCESS_JIFFIES && pcb->pnice < 19) { // if the process stopped before using all of the CPU time
+		total_tickets++;
+		pcb->pnice++;
+		//highPriorityProcElapsed = ClkGetCurJiffies();
+		highPriorityProcessExists = 1;
+	}
+	// if the last high priority process elapsed long enough ago for us to ignore/discount it
+  /*if((ClkGetCurJiffies() - highPriorityProcElapsed) / CLOCK_PROCESS_JIFFIES > 2 * AQueueLength(&runQueue))
+		highPriorityProcessExists = 0;*/
+
+    if( (duration == CLOCK_PROCESS_JIFFIES) && highPriorityProcessExists && pcb->pnice > 1) { // if it used the entire duration
+	//if( (duration == CLOCK_PROCESS_JIFFIES) && pcb->pnice > 1) { // if it used the entire duration
+
+		total_tickets--;
+		pcb->pnice--;
+  }
+}
+/////////////////////////////////////////////////////////////////////////////////
 //----------------------------------------------------------------------
 //
 //	ProcessSuspend
@@ -270,6 +443,9 @@ void ProcessSuspend (PCB *suspend) {
     printf("FATAL ERROR: could not insert suspend PCB into waitQueue!\n");
     exitsim();
   }
+	total_tickets -= suspend->pnice;
+	suspend->last_sleep_time = ClkGetCurJiffies();
+
   dbprintf ('p', "ProcessSuspend (%d): function complete\n", GetCurrentPid());
 }
 
@@ -303,6 +479,7 @@ void ProcessWakeup (PCB *wakeup) {
     printf("FATAL ERROR: could not insert link into runQueue in ProcessWakeup!\n");
     exitsim();
   }
+	total_tickets += wakeup->pnice;
 }
 
 
@@ -332,7 +509,7 @@ void ProcessDestroy (PCB *pcb) {
     exitsim();
   }
   if (AQueueInsertFirst(&zombieQueue, pcb->l) != QUEUE_SUCCESS) {
-    printf("FATAL ERROR: could not insert link into runQueue in ProcessWakeup!\n");
+    printf("FATAL ERROR: could not insert link into zombieQueue in ProcessDestroy!\n");
     exitsim();
   }
   dbprintf ('p', "ProcessDestroy (%d): function complete\n", GetCurrentPid());
@@ -406,7 +583,17 @@ int ProcessFork (VoidFunc func, uint32 param, int pnice, int pinfo,char *name, i
   // Copy the process name into the PCB.
   dbprintf('p', "ProcessFork: Copying process name (%s) to pcb\n", name);
   dstrcpy(pcb->name, name);
+	/* Initializing lottery scheduling, statistical analysis info
+	and sleep/yield info*/
+	pcb->pinfo = pinfo; pcb->jiffies = 0; pcb->yield = 0;
+	if (pnice <= 1) pcb->pnice = 1;
+	else if (pnice >= 19) pcb->pnice = 19;
+	else pcb->pnice = pnice;
+	total_tickets += pcb->pnice;
 
+	//pcb->auto_wake_up = 0; 
+	pcb->auto_sleep_time = -1;
+	pcb->last_sleep_time = -1;
   //----------------------------------------------------------------------
   // This section initializes the memory for this process
   //----------------------------------------------------------------------
@@ -547,18 +734,21 @@ int ProcessFork (VoidFunc func, uint32 param, int pnice, int pinfo,char *name, i
     // Mark this as a system process.
     pcb->flags |= PROCESS_TYPE_SYSTEM;
   }
+	if (func != ProcessIdle) {
+		// Place PCB onto run queue
+		intrs = DisableIntrs ();
+		if ((pcb->l = AQueueAllocLink(pcb)) == NULL) {
+			printf("FATAL ERROR: could not get link for forked PCB in ProcessFork!\n");
+			exitsim();
+		}
 
-  // Place PCB onto run queue
-  intrs = DisableIntrs ();
-  if ((pcb->l = AQueueAllocLink(pcb)) == NULL) {
-    printf("FATAL ERROR: could not get link for forked PCB in ProcessFork!\n");
-    exitsim();
-  }
-  if (AQueueInsertLast(&runQueue, pcb->l) != QUEUE_SUCCESS) {
-    printf("FATAL ERROR: could not insert link into runQueue in ProcessFork!\n");
-    exitsim();
-  }
-  RestoreIntrs (intrs);
+		if (AQueueInsertLast(&runQueue, pcb->l) != QUEUE_SUCCESS) {
+			printf("FATAL ERROR: could not insert link into runQueue in ProcessFork!\n");
+			exitsim();
+		}
+		dbprintf ('p',"Put PCB @ 0x%x into runQueue\n", (int)pcb);
+		RestoreIntrs (intrs);
+	}
 
   // If this is the first process, make it the current one
   if (currentPCB == NULL) {
@@ -773,7 +963,14 @@ void main (int argc, char *argv[])
   int numargs=0;
   char *params[10]; // Maximum number of command-line parameters is 10
   
-  debugstr[0] = '\0';
+  //debugstr[0] = 'n';
+  //debugstr[1] = 't';
+  //debugstr[2] = 'i';
+  //debugstr[3] = 'f';
+  //debugstr[4] = 'q';
+  //debugstr[5] = 'm';
+  //debugstr[6] = 'c';
+  debugstr[7] = 'p';
 
   printf ("Got %d arguments.\n", argc);
   printf ("Available memory: 0x%x -> 0x%x.\n", (int)lastosaddress, MemoryGetSize ());
@@ -862,6 +1059,7 @@ void main (int argc, char *argv[])
       numargs++;
     }
     dbprintf('i', "main: Calling process_create with %d parameters\n", numargs);
+    dbprintf('i', "main: params0 = %s, params1 = %s \n", params[0], params[1]);
     switch(numargs) {
       case  1: process_create(params[0], NULL); break;
       case  2: process_create(params[0], params[1], NULL); break;
@@ -950,6 +1148,7 @@ void process_create(char *name, ...)
   }
   allargs[k] = allargs[k+1] = 0;
   ProcessFork(0, (uint32)allargs, 0, 0, name, 1);
+	dbprintf ('i',"process_create: calling ProcessFork with name = %s\n", name);
 }
 
 int GetPidFromAddress(PCB *pcb) {
@@ -962,6 +1161,11 @@ int GetPidFromAddress(PCB *pcb) {
 //--------------------------------------------------------
 void ProcessUserSleep(int seconds) {
   // Your code here
+  //currentPCB->auto_wake_up = 1;
+	dbprintf ('p',"ProcessUserSleep: Put PID %d to sleep for %d seconds\n", GetPidFromAddress(currentPCB), seconds);
+  currentPCB->auto_sleep_time = seconds;
+  currentPCB->last_sleep_time = ClkGetCurTime();
+  ProcessSuspend(currentPCB);
 }
 
 //-----------------------------------------------------
@@ -971,4 +1175,6 @@ void ProcessUserSleep(int seconds) {
 //-----------------------------------------------------
 void ProcessYield() {
   // Your code here
+	currentPCB->yield = 1;
+	ProcessSchedule();
 }
