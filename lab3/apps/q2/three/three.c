@@ -40,11 +40,11 @@ void main (int argc, char *argv[])
     Exit();
   }
 
-  //recieve 2 h2o
+  //recieve 2 h2o (similar to consuming two h2o)
   mbox_recv(h2o_mbox, 3, (char *) msg);
   mbox_recv(h2o_mbox, 3, (char *) msg);
 
-  //send 2 h2
+  //send 2 h2 ('producing' two h2)
   mbox_send(h2_mbox, 2, "H2");
   Printf("Produced 1 H2\n");
   mbox_send(h2_mbox, 2, "H2");

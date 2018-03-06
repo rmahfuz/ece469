@@ -47,16 +47,20 @@ mbox_t MboxCreate() {
   int intr;
   int i;
 
-  intr = DisableIntrs();
+  /*This function is very similar to the Semaphore/Cond/Lock create
+    functions from lab 2. Notes about the member variables in mbox.h
+  */
+
+  intr = DisableIntrs();//accounting for synchronization
   for(mbox = 0; mbox<MBOX_NUM_MBOXES; mbox++){
     if(mboxes[mbox].inuse == 0){
       mboxes[mbox].inuse = 1;
       mboxes[mbox].lock = LockCreate();
       mboxes[mbox].notFull = CondCreate(mboxes[mbox].lock);
       mboxes[mbox].notEmpty = CondCreate(mboxes[mbox].lock);
-      AQueueInit(&(mboxes[mbox].msg_queue));
-      for (i = 0; i < PROCESS_MAX_PROCS; i++){
-        mboxes[mbox].procs[i] = 0;
+      AQueueInit(&(mboxes[mbox].msg_queue));    //initializing member queue
+      for (i = 0; i < PROCESS_MAX_PROCS; i++){ //procs is an array where each element represents a process pid
+        mboxes[mbox].procs[i] = 0;             //0 indicates the process does not have the mbox open, we are initializing the mailbox to be closed for all processes
       }
       break;
     }
@@ -88,18 +92,18 @@ int MboxOpen(mbox_t handle) {
   int pid = GetCurrentPid();
   int intr;
 
- if (LockHandleAcquire(mboxes[handle].lock) != SYNC_SUCCESS) {
+ if (LockHandleAcquire(mboxes[handle].lock) != SYNC_SUCCESS) { //acquires lock associated with this mbox
     printf("MboxOpen: LockAcquire fail\n");
     return MBOX_FAIL;
   }
 
-  intr = DisableIntrs();
-  if (mboxes[handle].inuse == 0) return MBOX_FAIL;
+  intr = DisableIntrs();    //ta said this is not needed here because we have aquired the lock but will not cause any errors
+  if (mboxes[handle].inuse == 0) return MBOX_FAIL;  //verifies that it is a valid (in use) mbox
 
   mboxes[handle].procs[pid] = 1; //indicates that current pid has opened mailbox handle
   RestoreIntrs(intr);
 
-  if (LockHandleRelease(mboxes[handle].lock) != SYNC_SUCCESS){
+  if (LockHandleRelease(mboxes[handle].lock) != SYNC_SUCCESS){ //release lock
     printf("MboxOpen: LockRelease fail");
     return MBOX_FAIL;
   }
@@ -120,7 +124,7 @@ int MboxOpen(mbox_t handle) {
 //
 //-------------------------------------------------------
 int MboxClose(mbox_t handle) {
-  int pid = GetCurrentPid();
+  int pid = GetCurrentPid(); //the current process is the one trying to close the mbox
   int numprocs = 0;
 
 
@@ -128,20 +132,20 @@ int MboxClose(mbox_t handle) {
     printf("MboxClose: LockAcquire fail\n");
     return MBOX_FAIL;
   }
-  pid = GetCurrentPid();
-  if (mboxes[handle].inuse == 0) return MBOX_FAIL;
+  pid = GetCurrentPid(); //not needed as I already initialized above but forgot to remove
+  if (mboxes[handle].inuse == 0) return MBOX_FAIL;  //verify mbox is valid (in use)
 
-  mboxes[handle].procs[pid] = 0;
+  mboxes[handle].procs[pid] = 0;    //closes mbox for pid (1 indicates open, 0 indicates closed)
 
-  for (pid = 0; pid < PROCESS_MAX_PROCS; pid++){
+  for (pid = 0; pid < PROCESS_MAX_PROCS; pid++){    //checking if any other processes has this mbox open
     if (mboxes[handle].procs[pid] == 1)
       numprocs++;
   }
 
-  if (numprocs == 0){
+  if (numprocs == 0){   //if no other process has this mbox open then disable it
     mboxes[handle].inuse = 0; 
     //reinitialize queue
-    AQueueInit(&(mboxes[handle].msg_queue));
+    AQueueInit(&(mboxes[handle].msg_queue));    //must reintialize queue after disabling, not sure why (as it is reinitializd in MboxCreate()) but ta said to
   }
 
   if (LockHandleRelease(mboxes[handle].lock) != SYNC_SUCCESS){
@@ -188,7 +192,7 @@ int MboxSend(mbox_t handle, int length, void* message) {
     return MBOX_FAIL;
   }
 
-  //check message length
+  //check message length and verify that it is no longer than max length
   if (length > MBOX_MAX_MESSAGE_LENGTH) {
     printf("MboxSend: message length too long.\n length: %d Max: %d", length, MBOX_MAX_MESSAGE_LENGTH);
     return MBOX_FAIL;
@@ -196,12 +200,12 @@ int MboxSend(mbox_t handle, int length, void* message) {
  
   //check if num items in queue is greater than max then wait
   //wait until there is room in queue (not full)
-  if (mboxes[handle].msg_queue.nitems >= MBOX_MAX_BUFFERS_PER_MBOX){
+  if (mboxes[handle].msg_queue.nitems >= MBOX_MAX_BUFFERS_PER_MBOX){//if the queue is full
     printf("PID(send): %d\n", GetCurrentPid()); 
-    CondHandleWait(mboxes[handle].notFull);
+    CondHandleWait(mboxes[handle].notFull);//wait until queue is not full
 
     printf("MboxSend: CondWait fail\n");
-    return MBOX_FAIL;
+    //return MBOX_FAIL;
   }
 
   //creating msg struct
@@ -214,17 +218,17 @@ int MboxSend(mbox_t handle, int length, void* message) {
 
   msgs[i].length = length;
 
-  dstrncpy(msgs[i].buffer, (char *)message, (length/sizeof(void*)));
+  dstrncpy(msgs[i].buffer, (char *)message, (length/sizeof(void*)));//copy message to buffer
   
   //adding msg struct to mailbox queue
   if ((lnk = AQueueAllocLink(msgs[i].buffer)) == NULL){//allocating in queue
     printf("Could not allocate Link");
     return MBOX_FAIL;
   }
-  AQueueInsertLast(&mboxes[handle].msg_queue, lnk);
+  AQueueInsertLast(&mboxes[handle].msg_queue, lnk); //insert message into queue
   
 
-  if (CondHandleSignal(mboxes[handle].notEmpty) != SYNC_SUCCESS) {
+  if (CondHandleSignal(mboxes[handle].notEmpty) != SYNC_SUCCESS) {  //signal not empty since we have just added something to queue
     printf("MboxSend: CondSignal fail");
     return MBOX_FAIL;
   }
@@ -270,26 +274,26 @@ int MboxRecv(mbox_t handle, int maxlength, void* message) {
   if(mboxes[handle].procs[pid] == 0) return MBOX_FAIL;
 
   //wait until message queue has sometihing in it (not empty)
-  if (AQueueEmpty(&mboxes[handle].msg_queue)){
-    if(CondHandleWait(mboxes[handle].notEmpty) != SYNC_SUCCESS){
+  if (AQueueEmpty(&mboxes[handle].msg_queue)){//if queue empty
+    if(CondHandleWait(mboxes[handle].notEmpty) != SYNC_SUCCESS){//wait until queue is not empty
       printf("MboxRecv: CondWait fail\n");
       return MBOX_FAIL;
     }
   }
 
-  l = AQueueFirst(&mboxes[handle].msg_queue);
-  m = (mbox_message*) l->object;
+  l = AQueueFirst(&mboxes[handle].msg_queue);//link to first in queue
+  m = (mbox_message*) l->object;  //message associated with link
   
-  if (m->length > maxlength){
+  if (m->length > maxlength){//verify length is valid
     printf("Cannot receive message, length too long\nlength: %d max: %d\n",m->length, maxlength * sizeof(void*));
     return MBOX_FAIL;
   }
 
-  dstrncpy(message, (void *)m->buffer, (m->length / sizeof(void *)));
+  dstrncpy(message, (void *)m->buffer, (m->length / sizeof(void *)));//copy message from queue
   m->inuse = 0;
-  AQueueRemove(&l);
+  AQueueRemove(&l);//remove from queue
 
-  if (CondHandleSignal(mboxes[handle].notFull) != SYNC_SUCCESS){
+  if (CondHandleSignal(mboxes[handle].notFull) != SYNC_SUCCESS){  //signal not full (since we just removed something from queue)
     printf("MboxRecv: CondSignal fail");
     return MBOX_FAIL;
   }
@@ -318,7 +322,7 @@ int MboxCloseAllByPid(int pid) {
   int i;
   int intr;
 
-  for (i = 0; i < MBOX_NUM_MBOXES; i++){
+  for (i = 0; i < MBOX_NUM_MBOXES; i++){  //for all maliboxes, close for this pid
     mboxes[i].procs[pid] = 0;
   }
   

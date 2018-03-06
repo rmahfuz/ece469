@@ -19,14 +19,14 @@ void main (int argc, char *argv[])
   h2o_mbox = dstrtol(argv[2], NULL, 10);
 
   if(mbox_open(h2o_mbox) != MBOX_SUCCESS){
-    Printf("Failed to open mailbox h2o_mbox (%d) in ", h2o_mbox); Printf(argv[0]);
+    Printf("Failed to open mailbox h2o_mbox (%d) in ", h2o_mbox); Printf(argv[0]); //open mbox
     Exit();
   }
 
-  mbox_send(h2o_mbox, 3, (void *) "H2O");
+  mbox_send(h2o_mbox, 3, (void *) "H2O");   //send message (represents one injection)
   //Printf("H2O sent to mbox\n");
 
-  if(mbox_close(h2o_mbox) != MBOX_SUCCESS){
+  if(mbox_close(h2o_mbox) != MBOX_SUCCESS){ //close mailbox
     Printf("Failed to close mailbox h2o_mbox (%d) in ", h2o_mbox); Printf(argv[0]);
     Exit();
   }

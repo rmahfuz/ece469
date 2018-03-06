@@ -32,12 +32,12 @@ void main (int argc, char *argv[])
   }
 
   // command line argument to int
-  num_h2o = dstrtol(argv[1], NULL, 10); // the "10" means base 10
+  num_h2o = dstrtol(argv[1], NULL, 10); // number of h2o injected
   num_so4 = dstrtol(argv[2], NULL, 10); // the "10" means base 10
 
-  num_three = (int) (num_h2o / 2);
-  num_four = (int) (num_so4);
-  num_five = (int) (findmin(num_h2o, 0.5*num_h2o + num_so4, num_so4));
+  num_three = (int) (num_h2o / 2);    //number of times reaction three occurs (calculated from equations)
+  num_four = (int) (num_so4);         //number of times reaction four occcurs
+  num_five = (int) (findmin(num_h2o, 0.5*num_h2o + num_so4, num_so4));  //number of times reaction five occurs
   // int to command line argument
 
   ditoa(0.5*num_h2o, num_three_str);
@@ -50,7 +50,7 @@ void main (int argc, char *argv[])
     Exit();
   }
   ditoa(s_procs_completed, s_procs_completed_str);
-  //==============================================================================================================
+  //Creating mboxes==============================================================================================================
   if ((h2o_mbox = mbox_create()) == MBOX_FAIL) {
     Printf("Bad mbox_create in "); Printf(argv[0]); Printf("\n");
     Exit();
@@ -130,7 +130,7 @@ void main (int argc, char *argv[])
   //==============================================================================================================
 
 
- /* // creating processes
+ /* // creating processes (from lab 2)
   process_create("one.dlx.obj",   s_procs_completed_str, argv[1], h2o_mbox_str, NULL);  // producer of h2o
   process_create("two.dlx.obj",   s_procs_completed_str, argv[2], so4_mbox_str, NULL);  // producer of so4
   process_create("three.dlx.obj", s_procs_completed_str, num_three_str, h2o_mbox_str, h2_mbox_str, o2_mbox_str,  NULL);  // consumer of 2h20
@@ -139,7 +139,7 @@ void main (int argc, char *argv[])
 */
 
   //creating processes
-  for (num =0; num < num_h2o; num++){
+  for (num =0; num < num_h2o; num++){   //one process for each injection
     process_create("one.dlx.obj", 0, 0, s_procs_completed_str, h2o_mbox_str);
   }
 
@@ -147,7 +147,7 @@ void main (int argc, char *argv[])
     process_create("two.dlx.obj", 0,0, s_procs_completed_str, so4_mbox_str);
   }
 
-  for (num =0; num < num_three; num++){
+  for (num =0; num < num_three; num++){ //one process for each reaction
     process_create("three.dlx.obj", 0,0, s_procs_completed_str, h2o_mbox_str, h2_mbox_str, o2_mbox_str);
   }
 

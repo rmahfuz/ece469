@@ -18,17 +18,18 @@
 //--------------------------------------------
 
 typedef struct mbox_message {
-	char* buffer;//[MBOX_MAX_MESSAGE_LENGTH];
-	int length;
-	int inuse;
+	char* buffer;//string that holds the message, must verify in mbox.c that it is less than the max length allowed for messages
+	int length;	//length of message
+	int inuse;	
 } mbox_message;
 
 typedef struct mbox {
-	Queue msg_queue;
-	lock_t lock;
-	cond_t notFull;
-	cond_t notEmpty;
-	int procs[PROCESS_MAX_PROCS];
+	Queue msg_queue;	//queue holding messages contained in this mbox
+	lock_t lock;		//lock handle for this mbox used in opening, closing, sending, receiving
+	cond_t notFull;		//cond handle indicating that msg_queue is not empty
+	cond_t notEmpty;	//cond handle indicating that msg_queue is not full
+	int procs[PROCESS_MAX_PROCS];	//array where each element represents a pid, 1 indicates that pid has the mailbox open and 0 means closed
+									//ex. if procs[20] = 1 that means that the process with pid 20 has opened this mailbox
 	int inuse;
 } mbox;
 
