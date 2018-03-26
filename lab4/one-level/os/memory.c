@@ -11,8 +11,8 @@
 #include "memory.h"
 #include "queue.h"
 
-// num_pages = size_of_memory / size_of_one_page
-static uint32 freemap[/*size*/];
+// num_pages = size_of_memory / size_of_one_page => 2MB/4KB = 512 pages
+static uint32 freemap[15]; //num_pages(512) / 32 pages
 static uint32 pagestart;
 static int nfreepages;
 static int freemapmax;
@@ -56,6 +56,23 @@ int MemoryGetSize() {
 //
 //----------------------------------------------------------------------
 void MemoryModuleInit() {
+  //0: in use, 1: available
+  int pages;
+  int i;
+  uint32 mask = 0xFFFFFFFF;
+
+  pages = lastosaddress / MEM_PAGESIZE + ((lastosaddress % MEM_PAGESIZE > 0)?1:0);
+  
+  for (i = 0; i < 16 i++){
+    freemap[i] = 0;
+    if (pages > 32){
+      pages -= 32;
+    } else {
+      freemap[i] = freemap [i] | (mask << (pages % 32));
+      pages = 0;
+  }
+  
+
 }
 
 
@@ -68,6 +85,11 @@ void MemoryModuleInit() {
 //
 //----------------------------------------------------------------------
 uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
+  uint32 offset, physical_addr;
+
+  offset = addr & 0xFFF;
+  physical_addr = ((pcb->pagetable[addr >> 12]) << 12) & offset;
+  return physical_addr;
 }
 
 
@@ -168,22 +190,33 @@ int MemoryCopyUserToSystem (PCB *pcb, unsigned char *from,unsigned char *to, int
 // Feel free to edit.
 //---------------------------------------------------------------------
 int MemoryPageFaultHandler(PCB *pcb) {
+	uint32 vpagenum = 0;
+	
+	uint32 stackpagenum = 0;
 
-  /* uint32 addr = pcb->currentSavedFrame[PROCESS_STACK_FAULT]; */
+  uint32 addr = pcb->currentSavedFrame[PROCESS_STACK_FAULT];
+
+  uint32 userPtr = pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER];
+
+	vpagenum = addr >> 12;
+
+	stackpagenum = userPtr >> 12;
+
+
 
   /* // segfault if the faulting address is not part of the stack */
-  /* if (vpagenum < stackpagenum) { */
-  /*   dbprintf('m', "addr = %x\nsp = %x\n", addr, pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER]); */
-  /*   printf("FATAL ERROR (%d): segmentation fault at page address %x\n", findpid(pcb), addr); */
-  /*   ProcessKill(); */
-  /*   return MEM_FAIL; */
-  /* } */
+   if (vpagenum < stackpagenum) { 
+     dbprintf('m', "addr = %x\nsp = %x\n", addr, pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER]); 
+     printf("FATAL ERROR (%d): segmentation fault at page address %x\n", findpid(pcb), addr); 
+     ProcessKill(); 
+     return MEM_FAIL; 
+   } 
 
-  /* ppagenum = MemoryAllocPage(); */
-  /* pcb->pagetable[vpagenum] = MemorySetupPte(ppagenum); */
-  /* dbprintf('m', "Returning from page fault handler\n"); */
-  /* return MEM_SUCCESS; */
-  return MEM_FAIL;
+   ppagenum = MemoryAllocPage(); 
+   pcb->pagetable[vpagenum] = MemorySetupPte(ppagenum); 
+   dbprintf('m', "Returning from page fault handler\n"); 
+   return MEM_SUCCESS; 
+  //return MEM_FAIL;
 }
 
 
