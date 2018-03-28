@@ -87,6 +87,8 @@ void ProcessModuleInit () {
     // STUDENT: Initialize the PCB's page table here.
     //-------------------------------------------------------
 
+	currentPCB->npages = 0;
+
     // Finally, insert the link into the queue
     if (AQueueInsertFirst(&freepcbs, pcbs[i].l) != QUEUE_SUCCESS) {
       printf("FATAL ERROR: could not insert PCB link into queue in ProcessModuleInit!\n");
@@ -137,6 +139,22 @@ void ProcessFreeResources (PCB *pcb) {
   //------------------------------------------------------------
   // STUDENT: Free any memory resources on process death here.
   //------------------------------------------------------------
+
+
+for(i = 0 ; i < 256 ; i++){
+
+	if (pcb->pagetable[i] & 0x1){
+		pcb->pagetable[i] = pcb->pagetable[i] + 0x1;
+		MemoryFreePage(pcb->pagetable[i]);
+
+
+	}
+
+
+
+}
+MemoryFreePage(pcb->sysStackArea);
+pcb->npages = 0;
 
 
   ProcessSetStatus (pcb, PROCESS_STATUS_FREE);
@@ -377,6 +395,8 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
                            // beginning of the string to the current argument.
   uint32 initial_user_params_bytes;  // total number of bytes in initial user parameters array
 
+uint32 newPage; //tmp page for initialization
+
 
   intrs = DisableIntrs ();
   dbprintf ('I', "Old interrupt value was 0x%x.\n", intrs);
@@ -418,14 +438,26 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
   //---------------------------------------------------------
 
   // System stack
+  newPage = MemoryAllocPage(); 
+  pcb->sysStackArea = MemorySetupPte(newPage);
+
   // User stack
+	newPage = MemoryAllocPage(); 
+  pcb->pagetable[255] = MemorySetupPte(newPage);
   // Assign 4 pages
+  for (i=0; i < 4 ; i++){
+	newPage = MemoryAllocPage(); 
+	pcb->pagetable[i] = MemorySetupPte(newPage);
+  }
 
+pcb->npages = 6;
 
+stackframe = (uint32*) pcb->sysStackArea + 0xFFC;
   // Now that the stack frame points at the bottom of the system stack memory area, we need to
   // move it up (decrement it) by one stack frame size because we're about to fill in the
   // initial stack frame that will be loaded for this PCB when it gets switched in by 
   // ProcessSchedule the first time.
+  stackframe = pcb->SystackArea + MEM_PAGESIZE - 4
   stackframe -= PROCESS_STACK_FRAME_SIZE;
 
   // The system stack pointer is set to the base of the current interrupt stack frame.
@@ -450,9 +482,9 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
   // STUDENT: setup the PTBASE, PTBITS, and PTSIZE here on the current
   // stack frame.
   //----------------------------------------------------------------------
-  /* stackframe[PROCESS_STACK_PTBASE] = ?? */
-  /* stackframe[PROCESS_STACK_PTSIZE] = ?? */
-  /* stackframe[PROCESS_STACK_PTBITS] = ?? */
+   stackframe[PROCESS_STACK_PTBASE] = (uint32) pcb->pagetable;
+   stackframe[PROCESS_STACK_PTSIZE] = (uint32)((0xc) << 16 + 0x16);
+   stackframe[PROCESS_STACK_PTBITS] = 256;
 
   if (isUser) {
     dbprintf ('p', "About to load %s\n", name);
@@ -483,7 +515,7 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
     // of the process's virtual address space (4-byte aligned).
     //----------------------------------------------------------------------
 
-    /* stackframe[PROCESS_STACK_USER_STACKPOINTER] = ?? & (~0x3); */
+     stackframe[PROCESS_STACK_USER_STACKPOINTER] = 0xFFFFF & (~0x3); 
     /* dbprintf('m', "stackframe[PROCESS_STACK_USER_STACKPOINTER] = %x\n", stackframe[PROCESS_STACK_USER_STACKPOINTER]); */
 
     //--------------------------------------------------------------------
