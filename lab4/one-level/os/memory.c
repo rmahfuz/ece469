@@ -13,9 +13,9 @@
 
 // num_pages = size_of_memory / size_of_one_page => 2MB/4KB = 512 pages
 static uint32 freemap[15]; //num_pages(512) / 32 pages
-static uint32 pagestart;
-static int nfreepages;
-static int freemapmax;
+//static uint32 pagestart;
+//static int nfreepages;
+//static int freemapmax;
 
 //----------------------------------------------------------------------
 //
@@ -61,15 +61,16 @@ void MemoryModuleInit() {
   int i;
   uint32 mask = 0xFFFFFFFF;
 
-  pages = lastosaddress / MEM_PAGESIZE + ((lastosaddress % MEM_PAGESIZE > 0)?1:0);
+  pages = lastosaddress / MEM_PAGESIZE + ((lastosaddress % MEM_PAGESIZE) > 0?1:0);
   
-  for (i = 0; i < 16 i++){
+  for (i = 0; i < 16; i++){
     freemap[i] = 0;
     if (pages > 32){
       pages -= 32;
     } else {
       freemap[i] = freemap [i] | (mask << (pages % 32));
       pages = 0;
+    }
   }
   
 
@@ -191,6 +192,8 @@ int MemoryCopyUserToSystem (PCB *pcb, unsigned char *from,unsigned char *to, int
 //---------------------------------------------------------------------
 int MemoryPageFaultHandler(PCB *pcb) {
 	uint32 vpagenum = 0;
+
+  uint32 ppagenum;
 	
 	uint32 stackpagenum = 0;
 
@@ -207,7 +210,7 @@ int MemoryPageFaultHandler(PCB *pcb) {
   /* // segfault if the faulting address is not part of the stack */
    if (vpagenum < stackpagenum) { 
      dbprintf('m', "addr = %x\nsp = %x\n", addr, pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER]); 
-     printf("FATAL ERROR (%d): segmentation fault at page address %x\n", findpid(pcb), addr); 
+     printf("FATAL ERROR (%d): segmentation fault at page address %x\n", GetPidFromAddress(pcb), addr); 
      ProcessKill(); 
      return MEM_FAIL; 
    } 
@@ -226,15 +229,37 @@ int MemoryPageFaultHandler(PCB *pcb) {
 //---------------------------------------------------------------------
 
 int MemoryAllocPage(void) {
-  return -1;
+  int i, j;
+  uint32 tmp;
+
+    for(i=0;i < 16; i++){
+      if (freemap[i] == 0) continue;
+      else{
+        tmp = 0x1;
+            for(j=0; j <32; j++){
+
+                if((freemap[i] & (tmp << j))){
+                    freemap[i] ^= tmp << j; 
+                    return (i*32) + j;
+                }
+            }
+        }
+
+  }
+  return MEM_FAIL;
+  
 }
 
 
+
 uint32 MemorySetupPte (uint32 page) {
-  return -1;
+  return (uint32)((page << 12) | MEM_PTE_VALID);
 }
 
 
 void MemoryFreePage(uint32 page) {
-}
 
+  uint32 page_num = page >> 12;
+  int left = page_num % 32;
+  freemap[page_num/32] = freemap[page_num/32] ^ (1<<left);
+}
