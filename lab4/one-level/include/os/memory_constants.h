@@ -27,7 +27,7 @@
 #define MEM_L2FIELD_FIRST_BITNUM MEM_L1FIELD_FIRST_BITNUM 
 
 // 4096KB virtual memory size.  so max address is 1<<22 - 1 
-#define MEM_MAX_VIRTUAL_ADDRESS 0xFFFFF
+#define MEM_MAX_VIRTUAL_ADDRESS (1<<22) -1
 
 #define MEM_PTE_READONLY 0x4 
 #define MEM_PTE_DIRTY 0x2 

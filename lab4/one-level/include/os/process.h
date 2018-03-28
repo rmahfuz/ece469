@@ -41,6 +41,7 @@ typedef struct PCB {
   char		name[80];	// Process name
   uint32	pagetable[2/* Put the size of the L1 page table here */]; // Statically allocated page table
   Link		*l;		// Used for keeping PCB in queues
+  uint32  npages;
 } PCB;
 
 extern PCB	*currentPCB;

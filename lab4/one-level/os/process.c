@@ -141,7 +141,7 @@ void ProcessFreeResources (PCB *pcb) {
   //------------------------------------------------------------
 
 
-for(i = 0 ; i < 256 ; i++){
+for(i = 0 ; i < 512 ; i++){
 
 	if (pcb->pagetable[i] & 0x1){
 		pcb->pagetable[i] = pcb->pagetable[i] + 0x1;
@@ -397,12 +397,14 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
 
 uint32 newPage; //tmp page for initialization
 
+  printf("Entering ProcessFork\n");///////////////////////////////////
 
   intrs = DisableIntrs ();
   dbprintf ('I', "Old interrupt value was 0x%x.\n", intrs);
   dbprintf ('p', "Entering ProcessFork args=0x%x 0x%x %s %d\n", (int)func,
 	    param, name, isUser);
   // Get a free PCB for the new process
+  printf("Before getting free PCB\n");/////////////////////////////////
   if (AQueueEmpty(&freepcbs)) {
     printf ("FATAL error: no free processes!\n");
     exitsim ();	// NEVER RETURNS!
@@ -413,6 +415,7 @@ uint32 newPage; //tmp page for initialization
     printf("FATAL ERROR: could not remove link from freepcbsQueue in ProcessFork!\n");
     exitsim();
   }
+  printf("After getting free pcb\n");////////////////////////////
   // This prevents someone else from grabbing this process
   ProcessSetStatus (pcb, PROCESS_STATUS_RUNNABLE);
 
@@ -443,7 +446,7 @@ uint32 newPage; //tmp page for initialization
 
   // User stack
 	newPage = MemoryAllocPage(); 
-  pcb->pagetable[255] = MemorySetupPte(newPage);
+  pcb->pagetable[511] = MemorySetupPte(newPage);
   // Assign 4 pages
   for (i=0; i < 4 ; i++){
 	newPage = MemoryAllocPage(); 
@@ -457,13 +460,15 @@ stackframe = (uint32*) pcb->sysStackArea + 0xFFC;
   // move it up (decrement it) by one stack frame size because we're about to fill in the
   // initial stack frame that will be loaded for this PCB when it gets switched in by 
   // ProcessSchedule the first time.
-  stackframe = pcb->SystackArea + MEM_PAGESIZE - 4
+  stackframe = pcb->sysStackArea + MEM_PAGESIZE - 4;
   stackframe -= PROCESS_STACK_FRAME_SIZE;
 
   // The system stack pointer is set to the base of the current interrupt stack frame.
   pcb->sysStackPtr = stackframe;
   // The current stack frame pointer is set to the same thing.
   pcb->currentSavedFrame = stackframe;
+
+printf("Before stack frame set up\n");//////////////////////////////////////
 
   //----------------------------------------------------------------------
   // This section sets up the stack frame for the process.  This is done
@@ -478,13 +483,14 @@ stackframe = (uint32*) pcb->sysStackArea + 0xFFC;
   dbprintf('m', "ProcessFork: stackframe = 0x%x\n", (int)stackframe);
   stackframe[PROCESS_STACK_PREV_FRAME] = 0;
 
+    printf("After student 1\n");
   //----------------------------------------------------------------------
   // STUDENT: setup the PTBASE, PTBITS, and PTSIZE here on the current
   // stack frame.
   //----------------------------------------------------------------------
    stackframe[PROCESS_STACK_PTBASE] = (uint32) pcb->pagetable;
-   stackframe[PROCESS_STACK_PTSIZE] = (uint32)((0xc) << 16 + 0x16);
-   stackframe[PROCESS_STACK_PTBITS] = 256;
+   stackframe[PROCESS_STACK_PTSIZE] = (uint32)((0xc) << 16 + 0xc);
+   stackframe[PROCESS_STACK_PTBITS] = 512;
 
   if (isUser) {
     dbprintf ('p', "About to load %s\n", name);
@@ -509,13 +515,13 @@ stackframe = (uint32*) pcb->sysStackArea + 0xFFC;
     }
     FsClose (fd);
     stackframe[PROCESS_STACK_ISR] = PROCESS_INIT_ISR_USER;
-
+    printf("After student 2\n");
     //----------------------------------------------------------------------
     // STUDENT: setup the initial user stack pointer here as the top
     // of the process's virtual address space (4-byte aligned).
     //----------------------------------------------------------------------
 
-     stackframe[PROCESS_STACK_USER_STACKPOINTER] = 0xFFFFF & (~0x3); 
+     stackframe[PROCESS_STACK_USER_STACKPOINTER] = 0x3FFFFF & (~0x3); 
     /* dbprintf('m', "stackframe[PROCESS_STACK_USER_STACKPOINTER] = %x\n", stackframe[PROCESS_STACK_USER_STACKPOINTER]); */
 
     //--------------------------------------------------------------------
@@ -627,6 +633,8 @@ stackframe = (uint32*) pcb->sysStackArea + 0xFFC;
   dbprintf ('p', "Leaving ProcessFork (%s)\n", name);
   // Return the process number (found by subtracting the PCB number
   // from the base of the PCB array).
+
+    printf("End proc fork\n");//////////////////////
   return (pcb - pcbs);
 }
 
@@ -885,6 +893,8 @@ void main (int argc, char *argv[])
         break;
     }
   }
+  
+
   dbprintf ('i', "About to initialize queues.\n");
   AQueueModuleInit ();
   dbprintf ('i', "After initializing queues.\n");
@@ -896,8 +906,10 @@ void main (int argc, char *argv[])
   SynchModuleInit ();
   dbprintf ('i', "After initializing synchronization tools.\n");
   KbdModuleInit ();
+  dbprintf ('i', "After initializing synchronization tools.\n");
   dbprintf ('i', "After initializing keyboard.\n");
   ClkModuleInit ();
+  dbprintf ('i', "After initializing synchronization tools.\n");
   dbprintf ('i', "After initializing clock.\n");
   for (i = 0; i < 100; i++) {
     buf[i] = 'a';
@@ -907,7 +919,7 @@ void main (int argc, char *argv[])
   FsSeek (i, 0, FS_SEEK_SET);
   FsWrite (i, buf, 80);
   FsClose (i);
-
+  
   // Setup command line arguments
   if (userprog != (char *)0) {
     numargs=0;
@@ -923,9 +935,11 @@ void main (int argc, char *argv[])
     }
     allargs[SIZE_ARG_BUFF-1] = '\0'; // set last char to NULL for safety
     ProcessFork(0, (uint32)allargs, userprog, 1);
+    printf("After Process fork\n");
   } else {
     dbprintf('i', "No user program passed!\n");
   }
+  printf("After setup command line\n");
   ClkStart();
   dbprintf ('i', "Set timer quantum to %d, about to run first process.\n",
 	    processQuantum);

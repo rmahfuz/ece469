@@ -27,5 +27,7 @@ int MemoryAllocPage(void);
 uint32 MemorySetupPte(uint32 page);
 void MemoryFreePage(uint32 page);
 
+int malloc();
+int mfree();
 
 #endif	// _memory_h_

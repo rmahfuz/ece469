@@ -263,3 +263,11 @@ void MemoryFreePage(uint32 page) {
   int left = page_num % 32;
   freemap[page_num/32] = freemap[page_num/32] ^ (1<<left);
 }
+
+int malloc(){
+  return 0;
+}
+
+int mfree(){
+  return 0;
+}
