@@ -66,7 +66,7 @@ uint32 get_argument(char *string);
 //----------------------------------------------------------------------
 void ProcessModuleInit () {
   int		i;
-
+  int   j;
   dbprintf ('p', "Entering ProcessModuleInit\n");
   AQueueInit (&freepcbs);
   AQueueInit (&runQueue);
@@ -88,6 +88,10 @@ void ProcessModuleInit () {
     //-------------------------------------------------------
 
 	currentPCB->npages = 0;
+  for (j = 0 ; j < MEM_L1TABLE_SIZE; j++){
+    pcbs[i].pagetable[j] = 0;
+
+  }
 
     // Finally, insert the link into the queue
     if (AQueueInsertFirst(&freepcbs, pcbs[i].l) != QUEUE_SUCCESS) {
@@ -144,7 +148,7 @@ void ProcessFreeResources (PCB *pcb) {
 for(i = 0 ; i < MEM_L1TABLE_SIZE ; i++){
 
 	if (pcb->pagetable[i] & 0x1){
-		pcb->pagetable[i] = pcb->pagetable[i] + 0x1;
+	//	pcb->pagetable[i] = pcb->pagetable[i] + 0x1;
 		MemoryFreePage(pcb->pagetable[i]);
 
 

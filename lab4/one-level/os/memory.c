@@ -116,11 +116,11 @@ uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
 
   offset = addr & 0xFFF;
   baseAddr = pcb->pagetable[addr >> 12];
-  if (baseAddr & 0x1){
+  if (baseAddr & 0x1){ //checking if Page Table Entry is valid
   physical_addr = ((baseAddr) & 0xFF000) | offset;
   return physical_addr;
   } else{
-
+    pcb->currentSavedFrame[PROCESS_STACK_FAULT] = addr;
     return MemoryPageFaultHandler(pcb);
 
   }
@@ -258,6 +258,7 @@ int MemoryPageFaultHandler(PCB *pcb) {
 
 
 //---------------------------------------------------------------------
+//    printf("After Process fork\n");
 // You may need to implement the following functions and access them from process.c
 // Feel free to edit/remove them
 //---------------------------------------------------------------------
@@ -293,10 +294,14 @@ uint32 MemorySetupPte (uint32 page) {
 
 
 void MemoryFreePage(uint32 page) {
-
+/*
   uint32 page_num = page >> 12;
   int left = page_num % 32;
   freemap[page_num/32] = freemap[page_num/32] ^ (1<<left);
+*/
+uint32 index = page/32;
+uint32 bitnum = page%32;
+freemap[index] = (freemap[index]&invert(0x1<<bitnum))|(0x1<<bitnum);
 }
 
 int malloc(){
