@@ -141,7 +141,7 @@ void ProcessFreeResources (PCB *pcb) {
   //------------------------------------------------------------
 
 
-for(i = 0 ; i < 512 ; i++){
+for(i = 0 ; i < MEM_L1TABLE_SIZE ; i++){
 
 	if (pcb->pagetable[i] & 0x1){
 		pcb->pagetable[i] = pcb->pagetable[i] + 0x1;
@@ -397,14 +397,12 @@ int ProcessFork (VoidFunc func, uint32 param, char *name, int isUser) {
 
 uint32 newPage; //tmp page for initialization
 
-  printf("Entering ProcessFork\n");///////////////////////////////////
 
   intrs = DisableIntrs ();
   dbprintf ('I', "Old interrupt value was 0x%x.\n", intrs);
   dbprintf ('p', "Entering ProcessFork args=0x%x 0x%x %s %d\n", (int)func,
 	    param, name, isUser);
   // Get a free PCB for the new process
-  printf("Before getting free PCB\n");/////////////////////////////////
   if (AQueueEmpty(&freepcbs)) {
     printf ("FATAL error: no free processes!\n");
     exitsim ();	// NEVER RETURNS!
@@ -415,7 +413,6 @@ uint32 newPage; //tmp page for initialization
     printf("FATAL ERROR: could not remove link from freepcbsQueue in ProcessFork!\n");
     exitsim();
   }
-  printf("After getting free pcb\n");////////////////////////////
   // This prevents someone else from grabbing this process
   ProcessSetStatus (pcb, PROCESS_STATUS_RUNNABLE);
 
@@ -442,11 +439,11 @@ uint32 newPage; //tmp page for initialization
 
   // System stack
   newPage = MemoryAllocPage(); 
-  pcb->sysStackArea = MemorySetupPte(newPage);
+  pcb->sysStackArea = newPage * MEM_PAGESIZE;
 
   // User stack
 	newPage = MemoryAllocPage(); 
-  pcb->pagetable[511] = MemorySetupPte(newPage);
+  pcb->pagetable[MEM_L1TABLE_SIZE - 1] = MemorySetupPte(newPage);
   // Assign 4 pages
   for (i=0; i < 4 ; i++){
 	newPage = MemoryAllocPage(); 
@@ -460,7 +457,7 @@ stackframe = (uint32*) pcb->sysStackArea + 0xFFC;
   // move it up (decrement it) by one stack frame size because we're about to fill in the
   // initial stack frame that will be loaded for this PCB when it gets switched in by 
   // ProcessSchedule the first time.
-  stackframe = pcb->sysStackArea + MEM_PAGESIZE - 4;
+  //stackframe = pcb->sysStackArea + MEM_PAGESIZE - 4;
   stackframe -= PROCESS_STACK_FRAME_SIZE;
 
   // The system stack pointer is set to the base of the current interrupt stack frame.
@@ -468,7 +465,6 @@ stackframe = (uint32*) pcb->sysStackArea + 0xFFC;
   // The current stack frame pointer is set to the same thing.
   pcb->currentSavedFrame = stackframe;
 
-printf("Before stack frame set up\n");//////////////////////////////////////
 
   //----------------------------------------------------------------------
   // This section sets up the stack frame for the process.  This is done
@@ -483,14 +479,13 @@ printf("Before stack frame set up\n");//////////////////////////////////////
   dbprintf('m', "ProcessFork: stackframe = 0x%x\n", (int)stackframe);
   stackframe[PROCESS_STACK_PREV_FRAME] = 0;
 
-    printf("After student 1\n");
   //----------------------------------------------------------------------
   // STUDENT: setup the PTBASE, PTBITS, and PTSIZE here on the current
   // stack frame.
   //----------------------------------------------------------------------
    stackframe[PROCESS_STACK_PTBASE] = (uint32) pcb->pagetable;
-   stackframe[PROCESS_STACK_PTSIZE] = (uint32)((0xc) << 16 + 0xc);
-   stackframe[PROCESS_STACK_PTBITS] = 512;
+   stackframe[PROCESS_STACK_PTSIZE] = MEM_L1TABLE_SIZE;//256;
+   stackframe[PROCESS_STACK_PTBITS] = 0XC00C; //(uint32)((0xc) << 16 + 0xc);
 
   if (isUser) {
     dbprintf ('p', "About to load %s\n", name);
@@ -515,7 +510,6 @@ printf("Before stack frame set up\n");//////////////////////////////////////
     }
     FsClose (fd);
     stackframe[PROCESS_STACK_ISR] = PROCESS_INIT_ISR_USER;
-    printf("After student 2\n");
     //----------------------------------------------------------------------
     // STUDENT: setup the initial user stack pointer here as the top
     // of the process's virtual address space (4-byte aligned).
@@ -634,7 +628,6 @@ printf("Before stack frame set up\n");//////////////////////////////////////
   // Return the process number (found by subtracting the PCB number
   // from the base of the PCB array).
 
-    printf("End proc fork\n");//////////////////////
   return (pcb - pcbs);
 }
 
@@ -834,7 +827,7 @@ void main (int argc, char *argv[])
   char allargs[SIZE_ARG_BUFF];
   int allargs_offset = 0;
   
-  debugstr[0] = '\0';
+  debugstr[0] = 'i';
 
   printf ("Got %d arguments.\n", argc);
   printf ("Available memory: 0x%x -> 0x%x.\n", (int)lastosaddress, MemoryGetSize ());
@@ -897,8 +890,10 @@ void main (int argc, char *argv[])
 
   dbprintf ('i', "About to initialize queues.\n");
   AQueueModuleInit ();
+  printf(" After first AQueuModuleInit, processQuantum = %d\n", processQuantum);///////////////////////////////////////////////////////////////////////
   dbprintf ('i', "After initializing queues.\n");
   MemoryModuleInit ();
+  printf(" After first MemoryModuleInit, processQuantum = %d\n", processQuantum);///////////////////////////////////////////////////////////////////////
   dbprintf ('i', "After initializing memory.\n");
 
   ProcessModuleInit ();
@@ -939,7 +934,6 @@ void main (int argc, char *argv[])
   } else {
     dbprintf('i', "No user program passed!\n");
   }
-  printf("After setup command line\n");
   ClkStart();
   dbprintf ('i', "Set timer quantum to %d, about to run first process.\n",
 	    processQuantum);

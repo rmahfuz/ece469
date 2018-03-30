@@ -86,10 +86,11 @@ void MemoryModuleInit() {
 //
 //----------------------------------------------------------------------
 uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
-  uint32 offset, physical_addr;
+  uint32 offset, baseAddr, physical_addr;
 
   offset = addr & 0xFFF;
-  physical_addr = ((pcb->pagetable[addr >> 12]) << 12) & offset;
+  baseAddr = pcb->pagetable[addr >> 12];
+  physical_addr = ((baseAddr) & 0xFF000) | offset;
   return physical_addr;
 }
 
