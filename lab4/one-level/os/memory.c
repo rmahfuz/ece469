@@ -77,19 +77,25 @@ void MemoryModuleInit() {
   int i;
   int divide;
   int mod;
+  uint32 page;
   uint32 mask = 0xFFFFFFFF;
 
-  divide = lastosaddress / MEM_PAGESIZE;
-  mod = lastosaddress % MEM_PAGESIZE;
-
+  divide = lastosaddress/MEM_PAGESIZE/32;
+  mod = (lastosaddress/MEM_PAGESIZE) % 32;
+	printf("lastosaddress%d\n", lastosaddress);
+	printf("this is divide %d\n", divide);
+	printf("this is mod %d\n", mod);
+	printf("freemap max %d\n", freemapmax);
   for (i = 0; i < freemapmax; i++){
     if (i < divide)
       freemap[i] = 0;
     if (i == divide)
-      freemap[i] = mask << mod;
+      freemap[i] = 0xFFFFFFFF&(mask << mod);
     if (i > divide)
       freemap[i] = mask;
-  }
+		printf("from memory module init  %d\n", freemap[i]);  
+}
+	
 }
 
 
@@ -260,14 +266,15 @@ int MemoryAllocPage(void) {
   int i, j;
   uint32 tmp;
 
-    for(i=0;i < 16; i++){
+    for(i=0;i < freemapmax; i++){
+	printf("freemap i:%d\n", i);
       if (freemap[i] == 0) continue;
       else{
         tmp = 0x1;
             for(j=0; j <32; j++){
-
+						printf("freemap j:%d\n", j);
                 if((freemap[i] & (tmp << j))){
-                    freemap[i] ^= tmp << j; 
+                    freemap[i] += tmp << j; 
                     return (i*32) + j;
                 }
             }

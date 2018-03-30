@@ -439,14 +439,24 @@ uint32 newPage; //tmp page for initialization
 
   // System stack
   newPage = MemoryAllocPage(); 
+  if (newPage == MEM_FAIL){
+    printf("MemoryAllocPage() Fail for system stack\n");
+  }
   pcb->sysStackArea = newPage * MEM_PAGESIZE;
 
   // User stack
 	newPage = MemoryAllocPage(); 
+  if (newPage == MEM_FAIL){
+    printf("MemoryAllocPage() Fail for user stack\n");
+  }
   pcb->pagetable[MEM_L1TABLE_SIZE - 1] = MemorySetupPte(newPage);
   // Assign 4 pages
   for (i=0; i < 4 ; i++){
-	newPage = MemoryAllocPage(); 
+	newPage = MemoryAllocPage();
+  if (newPage == MEM_FAIL){
+    printf("MemoryAllocPage() Fail for pagetable%d\n", i);
+  }
+ 
 	pcb->pagetable[i] = MemorySetupPte(newPage);
   }
 
@@ -890,10 +900,8 @@ void main (int argc, char *argv[])
 
   dbprintf ('i', "About to initialize queues.\n");
   AQueueModuleInit ();
-  printf(" After first AQueuModuleInit, processQuantum = %d\n", processQuantum);///////////////////////////////////////////////////////////////////////
   dbprintf ('i', "After initializing queues.\n");
   MemoryModuleInit ();
-  printf(" After first MemoryModuleInit, processQuantum = %d\n", processQuantum);///////////////////////////////////////////////////////////////////////
   dbprintf ('i', "After initializing memory.\n");
 
   ProcessModuleInit ();
@@ -930,14 +938,15 @@ void main (int argc, char *argv[])
     }
     allargs[SIZE_ARG_BUFF-1] = '\0'; // set last char to NULL for safety
     ProcessFork(0, (uint32)allargs, userprog, 1);
-    printf("After Process fork\n");
   } else {
     dbprintf('i', "No user program passed!\n");
   }
   ClkStart();
+  
   dbprintf ('i', "Set timer quantum to %d, about to run first process.\n",
 	    processQuantum);
   intrreturn ();
+  dbprintf('i', "yo\n");
   // Should never be called because the scheduler exits when there
   // are no runnable processes left.
   exitsim();	// NEVER RETURNS!
