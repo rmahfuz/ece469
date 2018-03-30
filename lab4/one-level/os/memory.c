@@ -12,10 +12,10 @@
 #include "queue.h"
 
 // num_pages = size_of_memory / size_of_one_page => 2MB/4KB = 512 pages
-static uint32 freemap[15]; //num_pages(512) / 32 pages
+static uint32 freemap[MEM_MAX_PAGES / 32]; //num_pages(512) / 32 pages
 //static uint32 pagestart;
 //static int nfreepages;
-//static int freemapmax;
+static int freemapmax = MEM_MAX_PAGES / 32;
 
 //----------------------------------------------------------------------
 //
@@ -57,13 +57,14 @@ int MemoryGetSize() {
 //----------------------------------------------------------------------
 void MemoryModuleInit() {
   //0: in use, 1: available
+  /*
   int pages;
   int i;
   uint32 mask = 0xFFFFFFFF;
 
-  pages = lastosaddress / MEM_PAGESIZE + ((lastosaddress % MEM_PAGESIZE) > 0?1:0);
+  pages = lastosaddress / MEM_PAGESIZE + ((lastosaddress % MEM_PAGESIZE));
   
-  for (i = 0; i < 16; i++){
+  for (i = 0; i < freemapmax; i++){
     freemap[i] = 0;
     if (pages > 32){
       pages -= 32;
@@ -71,9 +72,24 @@ void MemoryModuleInit() {
       freemap[i] = freemap [i] | (mask << (pages % 32));
       pages = 0;
     }
-  }
-  
+  }*/
 
+  int i;
+  int divide;
+  int mod;
+  uint32 mask = 0xFFFFFFFF;
+
+  divide = lastosaddress / MEM_PAGESIZE;
+  mod = lastosaddress % MEM_PAGESIZE;
+
+  for (i = 0; i < freemapmax; i++){
+    if (i < divide)
+      freemap[i] = 0;
+    if (i == divide)
+      freemap[i] = mask << mod;
+    if (i > divide)
+      freemap[i] = mask;
+  }
 }
 
 
@@ -88,10 +104,21 @@ void MemoryModuleInit() {
 uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
   uint32 offset, baseAddr, physical_addr;
 
+  if(addr > MEM_MAX_VIRTUAL_ADDRESS){
+    return MEM_FAIL;
+  }
+
   offset = addr & 0xFFF;
   baseAddr = pcb->pagetable[addr >> 12];
+  if (baseAddr & 0x1){
   physical_addr = ((baseAddr) & 0xFF000) | offset;
   return physical_addr;
+  } else{
+
+    return MemoryPageFaultHandler(pcb);
+
+  }
+
 }
 
 
@@ -202,9 +229,9 @@ int MemoryPageFaultHandler(PCB *pcb) {
 
   uint32 userPtr = pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER];
 
-	vpagenum = addr >> 12;
+	vpagenum = addr >> MEM_L1FIELD_FIRST_BITNUM;
 
-	stackpagenum = userPtr >> 12;
+  stackpagenum = userPtr >> MEM_L1FIELD_FIRST_BITNUM;
 
 
 

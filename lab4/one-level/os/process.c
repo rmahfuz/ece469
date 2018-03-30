@@ -450,9 +450,9 @@ uint32 newPage; //tmp page for initialization
 	pcb->pagetable[i] = MemorySetupPte(newPage);
   }
 
-pcb->npages = 6;
+  pcb->npages = 6;
 
-stackframe = (uint32*) pcb->sysStackArea + 0xFFC;
+  stackframe = (uint32*) pcb->sysStackArea + MEM_PAGESIZE - 4;
   // Now that the stack frame points at the bottom of the system stack memory area, we need to
   // move it up (decrement it) by one stack frame size because we're about to fill in the
   // initial stack frame that will be loaded for this PCB when it gets switched in by 
