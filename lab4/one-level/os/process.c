@@ -499,7 +499,7 @@ uint32 newPage; //tmp page for initialization
   //----------------------------------------------------------------------
    stackframe[PROCESS_STACK_PTBASE] = (uint32) pcb->pagetable;
    stackframe[PROCESS_STACK_PTSIZE] = MEM_L1TABLE_SIZE;//256;
-   stackframe[PROCESS_STACK_PTBITS] = 0XC00C; //(uint32)((0xc) << 16 + 0xc);
+   stackframe[PROCESS_STACK_PTBITS] = 0XC000C; //(uint32)((0xc) << 16 + 0xc);
 
   if (isUser) {
     dbprintf ('p', "About to load %s\n", name);

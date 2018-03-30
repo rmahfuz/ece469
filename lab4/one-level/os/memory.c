@@ -120,6 +120,7 @@ uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
   physical_addr = ((baseAddr) & 0xFF000) | offset;
   return physical_addr;
   } else{
+    printf("Invalid page table entry for *pcb = %d, addr = %d\n",*pcb, addr);
     pcb->currentSavedFrame[PROCESS_STACK_FAULT] = addr;
     return MemoryPageFaultHandler(pcb);
 
@@ -242,6 +243,7 @@ int MemoryPageFaultHandler(PCB *pcb) {
 
 
   /* // segfault if the faulting address is not part of the stack */
+  printf("MemoryPageFaultHandler: vpagenum = %d, stackpagenum = %d\n", vpagenum, stackpagenum);
    if (vpagenum < stackpagenum) { 
      dbprintf('m', "addr = %x\nsp = %x\n", addr, pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER]); 
      printf("FATAL ERROR (%d): segmentation fault at page address %x\n", GetPidFromAddress(pcb), addr); 
