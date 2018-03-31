@@ -149,7 +149,7 @@ for(i = 0 ; i < MEM_L1TABLE_SIZE ; i++){
 
 	if (pcb->pagetable[i] & 0x1){
 	//	pcb->pagetable[i] = pcb->pagetable[i] + 0x1;
-		MemoryFreePage(pcb->pagetable[i]);
+		MemoryFreePage(pcb->pagetable[i]>>MEM_L1FIELD_FIRST_BITNUM);
 
 
 	}
@@ -455,6 +455,7 @@ uint32 newPage; //tmp page for initialization
   }
   pcb->pagetable[MEM_L1TABLE_SIZE - 1] = MemorySetupPte(newPage);
   // Assign 4 pages
+
   for (i=0; i < 4 ; i++){
 	newPage = MemoryAllocPage();
   if (newPage == MEM_FAIL){
@@ -843,6 +844,8 @@ void main (int argc, char *argv[])
   int allargs_offset = 0;
   
   debugstr[0] = 'p';
+  debugstr[1] = 'v';
+  debugstr[2] = 'i';
 
   printf ("Got %d arguments.\n", argc);
   printf ("Available memory: 0x%x -> 0x%x.\n", (int)lastosaddress, MemoryGetSize ());
