@@ -122,7 +122,7 @@ uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
   offset = addr & 0xFFF;
   baseAddr = pcb->pagetable[addr >> 12];
   if (baseAddr & 0x1){ //checking if Page Table Entry is valid
-  physical_addr = ((baseAddr) & 0x1FF000) | offset;
+  physical_addr = ((baseAddr) & 0xFFFFF000) | offset;
   return physical_addr;
   } else{
     printf("Invalid page table entry for *pcb = %d, addr = %d\n",*pcb, addr);
@@ -292,7 +292,7 @@ int MemoryAllocPage(void) {
 
                     for(k = 0; k < freemapmax; k++){
 
-    printf("success freemap, index%d   %d\n", k, freemap[k]);
+    //printf("success freemap, index%d   %d\n", k, freemap[k]);
 
   }
                     return (i*32) + j;

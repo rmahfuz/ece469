@@ -157,7 +157,9 @@ for(i = 0 ; i < MEM_L1TABLE_SIZE ; i++){
 
 
 }
-MemoryFreePage(pcb->sysStackArea);
+MemoryFreePage((pcb->sysStackArea)/MEM_PAGESIZE);
+pcb->sysStackArea = 0;
+//
 pcb->npages = 0;
 
 
@@ -465,7 +467,7 @@ uint32 newPage; //tmp page for initialization
 	pcb->pagetable[i] = MemorySetupPte(newPage);
   }
 
-  pcb->npages = 6;
+  //pcb->npages = 6;
 
   stackframe = (uint32*) pcb->sysStackArea + MEM_PAGESIZE - 4;
   // Now that the stack frame points at the bottom of the system stack memory area, we need to
@@ -498,7 +500,7 @@ uint32 newPage; //tmp page for initialization
   // STUDENT: setup the PTBASE, PTBITS, and PTSIZE here on the current
   // stack frame.
   //----------------------------------------------------------------------
-   stackframe[PROCESS_STACK_PTBASE] = (uint32) pcb->pagetable;
+   stackframe[PROCESS_STACK_PTBASE] = pcb->pagetable;
    stackframe[PROCESS_STACK_PTSIZE] = MEM_L1TABLE_SIZE;//256;
    stackframe[PROCESS_STACK_PTBITS] = 0XC000C; //(uint32)((0xc) << 16 + 0xc);
 
@@ -844,7 +846,7 @@ void main (int argc, char *argv[])
   int allargs_offset = 0;
   
   debugstr[0] = 'p';
-  debugstr[1] = 'v';
+  //debugstr[1] = 'v';
   debugstr[2] = 'i';
 
   printf ("Got %d arguments.\n", argc);
