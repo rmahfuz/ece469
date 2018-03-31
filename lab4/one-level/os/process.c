@@ -87,7 +87,7 @@ void ProcessModuleInit () {
     // STUDENT: Initialize the PCB's page table here.
     //-------------------------------------------------------
 
-	currentPCB->npages = 0;
+	//currentPCB->npages = 0;
   for (j = 0 ; j < MEM_L1TABLE_SIZE; j++){
     pcbs[i].pagetable[j] = 0;
 
@@ -159,8 +159,7 @@ for(i = 0 ; i < MEM_L1TABLE_SIZE ; i++){
 }
 MemoryFreePage((pcb->sysStackArea)/MEM_PAGESIZE);
 pcb->sysStackArea = 0;
-//
-pcb->npages = 0;
+//pcb->npages = 0;
 
 
   ProcessSetStatus (pcb, PROCESS_STATUS_FREE);
@@ -443,6 +442,18 @@ uint32 newPage; //tmp page for initialization
   // for the system stack.
   //---------------------------------------------------------
 
+  // Assign 4 pages
+
+  for (i=0; i < 4 ; i++){
+  newPage = MemoryAllocPage();
+  if (newPage == MEM_FAIL){
+    printf("MemoryAllocPage() Fail for pagetable%d\n", i);
+  }
+ 
+  pcb->pagetable[i] = MemorySetupPte(newPage);
+  }
+
+
   // System stack
   newPage = MemoryAllocPage(); 
   if (newPage == MEM_FAIL){
@@ -456,17 +467,7 @@ uint32 newPage; //tmp page for initialization
     printf("MemoryAllocPage() Fail for user stack\n");
   }
   pcb->pagetable[MEM_L1TABLE_SIZE - 1] = MemorySetupPte(newPage);
-  // Assign 4 pages
-
-  for (i=0; i < 4 ; i++){
-	newPage = MemoryAllocPage();
-  if (newPage == MEM_FAIL){
-    printf("MemoryAllocPage() Fail for pagetable%d\n", i);
-  }
- 
-	pcb->pagetable[i] = MemorySetupPte(newPage);
-  }
-
+  
   //pcb->npages = 6;
 
   stackframe = (uint32*) pcb->sysStackArea + MEM_PAGESIZE - 4;
