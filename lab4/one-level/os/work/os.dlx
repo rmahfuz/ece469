@@ -1,7 +1,7 @@
 ; Linked by DLX-LD.
 ; MemSize 245760
 ; Data size: 160740
-; Text size: 69012
+; Text size: 68988
 ; Stack size: 8192
 .text 0x1000
 .data 0x12000
@@ -4432,15 +4432,9 @@ L21_LF3:
 	add	r1,r1,r2
 	addi	r2,r0,#1
 	sw	12(r1),r2
-	lhi	r1,((_pcbs_LF3)>>16)&0xffff
-	addui	r1,r1,(_pcbs_LF3)&0xffff
-	lw	r2,-12(r30)
-	addi	r3,r0,#4200
-	movi2fp	f0,r2
-	movi2fp	f1,r3
-	mult	f0,f0,f1
-	movfp2i	r2,f0
-	add	r1,r1,r2
+	lhi	r2,((_currentPCB)>>16)&0xffff
+	addui	r2,r2,(_currentPCB)&0xffff
+	lw	r1,(r2)
 	addi	r2,r0,#0
 	sw	4196(r1),r2
 	addi	r1,r0,#0
