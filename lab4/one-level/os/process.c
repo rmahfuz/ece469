@@ -1,14 +1,4 @@
-//
-//	process.c
-//
-//	This file defines routines for dealing with processes.  This
-//	includes the "main" routine for the OS, which creates a process
-//	for the initial thread of execution.  It also includes
-//	code to create and delete processes, as well as context switch
-//	code.  Note, however, that the actual context switching is
-//	done in assembly language elsewhere.
-
-#include "ostraps.h"
+nclude "ostraps.h"
 #include "dlxos.h"
 #include "process.h"
 #include "synch.h"
@@ -88,7 +78,6 @@ void ProcessModuleInit () {
     //-------------------------------------------------------
 
 	//currentPCB->npages = 0;
-	pcbs[i].npages = 0;
   for (j = 0 ; j < MEM_L1TABLE_SIZE; j++){
     pcbs[i].pagetable[j] = 0;
 
@@ -150,13 +139,18 @@ for(i = 0 ; i < MEM_L1TABLE_SIZE ; i++){
 
 	if (pcb->pagetable[i] & 0x1){
 	//	pcb->pagetable[i] = pcb->pagetable[i] + 0x1;
-		MemoryFreePage((pcb->pagetable[i]) >> 12);
+		MemoryFreePage(pcb->pagetable[i]>>MEM_L1FIELD_FIRST_BITNUM);
 
 
 	}
+
+
+
 }
-pcb->npages = 0;
-MemoryFreePage(pcb->sysStackArea);
+MemoryFreePage((pcb->sysStackArea)/MEM_PAGESIZE);
+pcb->sysStackArea = 0;
+//pcb->npages = 0;
+
 
   ProcessSetStatus (pcb, PROCESS_STATUS_FREE);
 }
@@ -248,7 +242,7 @@ void ProcessSchedule () {
     }
     ProcessFreeResources(pcb);
   }
-
+  dbprintf('p', "End of processSchedule\n");//remove
   RestoreIntrs(intrvals);
 }
 
@@ -438,25 +432,22 @@ uint32 newPage; //tmp page for initialization
   // for the system stack.
   //---------------------------------------------------------
 
-
-  pcb->npages = 6;
-
   // Assign 4 pages
+
   for (i=0; i < 4 ; i++){
-	newPage = MemoryAllocPage();
+  newPage = MemoryAllocPage();
   if (newPage == MEM_FAIL){
     printf("MemoryAllocPage() Fail for pagetable%d\n", i);
-	exitsim();
   }
  
-	pcb->pagetable[i] = MemorySetupPte(newPage);
+  pcb->pagetable[i] = MemorySetupPte(newPage);
   }
+
 
   // System stack
   newPage = MemoryAllocPage(); 
   if (newPage == MEM_FAIL){
     printf("MemoryAllocPage() Fail for system stack\n");
-	exitsim();
   }
   pcb->sysStackArea = newPage * MEM_PAGESIZE;
 
@@ -464,11 +455,12 @@ uint32 newPage; //tmp page for initialization
 	newPage = MemoryAllocPage(); 
   if (newPage == MEM_FAIL){
     printf("MemoryAllocPage() Fail for user stack\n");
-	exitsim();
   }
-  pcb->pagetable[MEM_L1TABLE_SIZE - 1] = MemorySetupPte(newPage);  // index is 1023
+  pcb->pagetable[MEM_L1TABLE_SIZE - 1] = MemorySetupPte(newPage);
+  
+  //pcb->npages = 6;
 
-  stackframe = (uint32*)( pcb->sysStackArea + MEM_PAGESIZE - 4);
+  stackframe = (uint32*) pcb->sysStackArea + MEM_PAGESIZE - 4;
   // Now that the stack frame points at the bottom of the system stack memory area, we need to
   // move it up (decrement it) by one stack frame size because we're about to fill in the
   // initial stack frame that will be loaded for this PCB when it gets switched in by 
@@ -499,9 +491,9 @@ uint32 newPage; //tmp page for initialization
   // STUDENT: setup the PTBASE, PTBITS, and PTSIZE here on the current
   // stack frame.
   //----------------------------------------------------------------------
-   stackframe[PROCESS_STACK_PTBASE] = (uint32) pcb->pagetable;
+   stackframe[PROCESS_STACK_PTBASE] = pcb->pagetable;
    stackframe[PROCESS_STACK_PTSIZE] = MEM_L1TABLE_SIZE;//256;
-   stackframe[PROCESS_STACK_PTBITS] = 0xC000C; //(uint32)((0xc) << 16 + 0xc);
+   stackframe[PROCESS_STACK_PTBITS] = 0XC000C; //(uint32)((0xc) << 16 + 0xc);
 
   if (isUser) {
     dbprintf ('p', "About to load %s\n", name);
@@ -640,6 +632,7 @@ uint32 newPage; //tmp page for initialization
     currentPCB = pcb;
   }
 
+  dbprintf('p', "Resources freed\n");
   dbprintf ('p', "Leaving ProcessFork (%s)\n", name);
   // Return the process number (found by subtracting the PCB number
   // from the base of the PCB array).
@@ -843,7 +836,9 @@ void main (int argc, char *argv[])
   char allargs[SIZE_ARG_BUFF];
   int allargs_offset = 0;
   
-  debugstr[0] = 'i';
+  debugstr[0] = 'p';
+  //debugstr[1] = 'v';
+  debugstr[2] = 'i';
 
   printf ("Got %d arguments.\n", argc);
   printf ("Available memory: 0x%x -> 0x%x.\n", (int)lastosaddress, MemoryGetSize ());
@@ -944,6 +939,7 @@ void main (int argc, char *argv[])
     }
     allargs[SIZE_ARG_BUFF-1] = '\0'; // set last char to NULL for safety
     ProcessFork(0, (uint32)allargs, userprog, 1);
+   dbprintf('p', "Resources freed\n");
   } else {
     dbprintf('i', "No user program passed!\n");
   }
@@ -1017,7 +1013,9 @@ int GetPidFromAddress(PCB *pcb) {
 void ProcessKill() {
   dbprintf('m', "ProcessKill: killing processid %d\n", GetCurrentPid());
   ProcessDestroy(currentPCB);
+  printf("KILLING PROCESS\n");//remove
   ProcessSchedule();
 }
+
 
 
