@@ -251,7 +251,7 @@ void ProcessSchedule () {
     }
     ProcessFreeResources(pcb);
   }
-
+  dbprintf('p', "End of processSchedule\n");//remove
   RestoreIntrs(intrvals);
 }
 
@@ -638,6 +638,7 @@ uint32 newPage; //tmp page for initialization
     currentPCB = pcb;
   }
 
+  dbprintf('p', "Resources freed\n");
   dbprintf ('p', "Leaving ProcessFork (%s)\n", name);
   // Return the process number (found by subtracting the PCB number
   // from the base of the PCB array).
@@ -841,7 +842,7 @@ void main (int argc, char *argv[])
   char allargs[SIZE_ARG_BUFF];
   int allargs_offset = 0;
   
-  debugstr[0] = 'i';
+  debugstr[0] = 'p';
 
   printf ("Got %d arguments.\n", argc);
   printf ("Available memory: 0x%x -> 0x%x.\n", (int)lastosaddress, MemoryGetSize ());
@@ -942,6 +943,7 @@ void main (int argc, char *argv[])
     }
     allargs[SIZE_ARG_BUFF-1] = '\0'; // set last char to NULL for safety
     ProcessFork(0, (uint32)allargs, userprog, 1);
+   dbprintf('p', "Resources freed\n");
   } else {
     dbprintf('i', "No user program passed!\n");
   }
@@ -1015,6 +1017,7 @@ int GetPidFromAddress(PCB *pcb) {
 void ProcessKill() {
   dbprintf('m', "ProcessKill: killing processid %d\n", GetCurrentPid());
   ProcessDestroy(currentPCB);
+  printf("KILLING PROCESS\n");//remove
   ProcessSchedule();
 }
 

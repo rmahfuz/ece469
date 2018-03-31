@@ -26,6 +26,8 @@ void main (int argc, char *argv[])
     Exit();
   }
 
+  Printf("semaphores created\n");//remove
+
   // Setup the command-line arguments for the new processes.  We're going to
   // pass the handles to the semaphore as strings
   // on the command line, so we must first convert them from ints to strings.
@@ -37,6 +39,7 @@ void main (int argc, char *argv[])
   for(i=0; i<num_hello_world; i++) {
     Printf("makeprocs (%d): Creating hello world #%d\n", getpid(), i);
     process_create(HELLO_WORLD, s_procs_completed_str, NULL);
+    Printf("Process created\n");//remove
     if (sem_wait(s_procs_completed) != SYNC_SUCCESS) {
       Printf("Bad semaphore s_procs_completed (%d) in %s\n", s_procs_completed, argv[0]);
       Exit();
