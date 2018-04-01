@@ -7,7 +7,7 @@ void main (int argc, char *argv[])
 {
   int part_num = 0;             // Used to store number of processes to create
   int i;                               // Loop index variable
-  int num_procs;
+	int num_procs;
   sem_t s_procs_completed;             // Semaphore used to wait until all spawned processes have completed
   char s_procs_completed_str[10];      // Used as command-line argument to pass page_mapped handle to new processes
 
@@ -52,7 +52,7 @@ switch(part_num) {
 case 0: {
 		Printf("makeprocs (%d): part1: Creating a hello world process\n", getpid());
 		process_create(HELLO_WORLD, s_procs_completed_str, NULL);
-} break;
+}
 case 1: {
 		Printf("makeprocs (%d): part1: Creating a hello world process\n", getpid());
 		process_create("part1.dlx.obj", s_procs_completed_str, NULL);

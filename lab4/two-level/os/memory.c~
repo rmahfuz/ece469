@@ -17,6 +17,8 @@ static uint32 freemap[MEM_MAX_PAGES / 32]; //num_pages(512) / 32 pages
 //static int nfreepages;
 static int freemapmax = MEM_MAX_PAGES / 32;
 
+
+static l2_pagetable l2_pagetables[MEM_MAX_L2_PAGETABLES]; //256
 //----------------------------------------------------------------------
 //
 //	This silliness is required because the compiler believes that
@@ -90,6 +92,11 @@ void MemoryModuleInit() {
     if (i > divide)
       freemap[i] = mask;
 }
+
+	for (i = 0 ; i < MEM_MAX_L2_PAGETABLES ; i++){
+		l2_pagetables[i].inuse = 0;
+
+	}
 	
 }
 
@@ -103,15 +110,17 @@ void MemoryModuleInit() {
 //
 //----------------------------------------------------------------------
 uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
-  uint32 offset, baseAddr, physical_addr;
+  uint32 offset, baseAddr, physical_addr, l1_pageNum, l2_pageNum;
 
   if(addr > MEM_MAX_VIRTUAL_ADDRESS){
     return MEM_FAIL;
   }
 
   offset = addr & 0xFFF;
-  baseAddr = pcb->pagetable[addr >> MEM_L1FIELD_FIRST_BITNUM];
-  if (baseAddr & MEM_PTE_VALID){ //checking if Page Table Entry is valid, use MEM_PTE_VALID
+  l1_pageNum = addr >> MEM_L1FIELD_FIRST_BITNUM;
+  l2_pageNum = (addr >> MEM_L2FIELD_FIRST_BITNUM) & 0xFF;
+  baseAddr = ((uint32*)(pcb->pagetable[l1_pageNum]))[l2_pageNum];
+  if (baseAddr & 0x1){ //checking if Page Table Entry is valid, use MEM_PTE_VALID
   physical_addr = ((baseAddr) & 0x1FF000) | offset;
   return physical_addr;
   } else{
@@ -231,10 +240,15 @@ int MemoryPageFaultHandler(PCB *pcb) {
 
   uint32 userPtr = pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER];
 
-	vpagenum = addr >> MEM_L1FIELD_FIRST_BITNUM;
+	uint32 l2_pageNum = (addr >> MEM_L2FIELD_FIRST_BITNUM) & 0xFF;
+	uint32 l1_pageNum = (addr >> MEM_L1FIELD_FIRST_BITNUM);
 
-  stackpagenum = userPtr >> MEM_L1FIELD_FIRST_BITNUM;
+	vpagenum = addr >> MEM_L2FIELD_FIRST_BITNUM;
 
+  stackpagenum = userPtr >> MEM_L2FIELD_FIRST_BITNUM;
+
+
+	
 
 
   /* // segfault if the faulting address is not part of the stack */
@@ -242,12 +256,15 @@ int MemoryPageFaultHandler(PCB *pcb) {
    if (vpagenum < stackpagenum) { 
      dbprintf('m', "addr = %x\nsp = %x\n", addr, pcb->currentSavedFrame[PROCESS_STACK_USER_STACKPOINTER]); 
      printf("FATAL ERROR (%d): segmentation fault at page address %x\n", GetPidFromAddress(pcb), addr); 
-     ProcessKill(); 
+     ProcessKill(); //argument
      return MEM_FAIL; 
    } 
 
    ppagenum = MemoryAllocPage(); 
-   pcb->pagetable[vpagenum] = MemorySetupPte(ppagenum); 
+   //pcb->pagetable[vpagenum] = MemorySetupPte(ppagenum); 
+	
+	((uint32*)pcb->pagetable[l1_pageNum])[l2_pageNum] = MemorySetupPte(ppagenum);
+	
    dbprintf('m', "Returning from page fault handler\n"); 
    return MEM_SUCCESS; 
   //return MEM_FAIL;
@@ -308,3 +325,33 @@ int malloc(){
 int mfree(){
   return 0;
 }
+
+//two-level pagetable function for allocate
+void MemoryAllocateL2PT(PCB* pcb, uint32 l1_pageNum){
+	if ((uint32*)(pcb->pagetable[l1_pageNum]) == NULL) 
+		pcb->pagetable[l1_pageNum] = findFreeL2pte();
+
+
+}
+
+uint32* findFreeL2pte(){
+	int i;
+	for (i =0; i < MEM_MAX_L2_PAGETABLES ; i++){
+		if (l2_pagetables[i].inuse == 0){
+			l2_pagetables[i].inuse = 1;
+			return (uint32*)(l2_pagetables[i].table);
+
+		}
+
+
+	}
+	return NULL;
+
+}
+
+
+
+
+
+
+

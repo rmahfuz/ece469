@@ -89,8 +89,11 @@ void ProcessModuleInit () {
 
 	//currentPCB->npages = 0;
 	pcbs[i].npages = 0;
-  for (j = 0 ; j < MEM_L1TABLE_SIZE; j++){
-    pcbs[i].pagetable[j] = 0;
+
+
+//double check for the "2" thing
+  for (j = 0 ; j < 4; j++){
+    pcbs[i].pagetable[j] = NULL;
 
   }
 
@@ -127,7 +130,8 @@ void ProcessSetStatus (PCB *pcb, int status) {
 //----------------------------------------------------------------------
 void ProcessFreeResources (PCB *pcb) {
   int i = 0;
-
+	int j = 0;
+	int* tmp;
   // Allocate a new link for this pcb on the freepcbs queue
   if ((pcb->l = AQueueAllocLink(pcb)) == NULL) {
     printf("FATAL ERROR: could not get Queue Link in ProcessFreeResources!\n");
@@ -145,16 +149,32 @@ void ProcessFreeResources (PCB *pcb) {
   // STUDENT: Free any memory resources on process death here.
   //------------------------------------------------------------
 
-
+/* one-level free loop
 for(i = 0 ; i < MEM_L1TABLE_SIZE ; i++){
 
-	if (pcb->pagetable[i] & MEM_PTE_VALID){
-	//	pcb->pagetable[i] = pcb->pagetable[i] + 0x1;
-		MemoryFreePage((pcb->pagetable[i]) >> MEM_L1FIELD_FIRST_BITNUM);
+	if (pcb->pagetable[i] & 0x1)
+		MemoryFreePage((pcb->pagetable[i]) >> 12);
 
 
 	}
 }
+*/
+//double check
+
+for(i = 0 ; i < 4 ; i++){
+	if ((uint32*)(pcb->pagetable[i]) == NULL) continue;
+	for (j = 0; j < MEM_MAX_L2_PAGETABLES ; j++ ){
+		if ( ((uint32*)pcb->pagetable[i])[j] & 0x1){
+		//	pcb->pagetable[i] = pcb->pagetable[i] + 0x1;
+			MemoryFreePage(((uint32*)pcb->pagetable[i])[j] >> 12);
+		}
+
+	}
+	//pcb->pagetable[i] = NULL;
+	tmp = pcb->pagetable[i] - 1;
+	*tmp = 0;
+}
+
 pcb->npages = 0;
 MemoryFreePage(pcb->sysStackArea);
 
@@ -440,7 +460,10 @@ uint32 newPage; //tmp page for initialization
 
 
   pcb->npages = 6;
-
+	
+	//two level
+pcb->pagetable[0] = (uint32)findFreeL2pte();
+pcb->pagetable[3] = (uint32)findFreeL2pte();
   // Assign 4 pages
   for (i=0; i < 4 ; i++){
 	newPage = MemoryAllocPage();
@@ -449,7 +472,7 @@ uint32 newPage; //tmp page for initialization
 	exitsim();
   }
  
-	pcb->pagetable[i] = MemorySetupPte(newPage);
+	((uint32*)(pcb->pagetable[0]))[i] = MemorySetupPte(newPage);
   }
 
   // System stack
@@ -466,8 +489,10 @@ uint32 newPage; //tmp page for initialization
     printf("MemoryAllocPage() Fail for user stack\n");
 	exitsim();
   }
-  pcb->pagetable[MEM_L1TABLE_SIZE - 1] = MemorySetupPte(newPage);  // index is 1023
-
+  //pcb->pagetable[MEM_L1TABLE_SIZE - 1] = MemorySetupPte(newPage);  // index is 1023
+//twon level
+	((uint32*)(pcb->pagetable[3]))[MEM_MAX_L2_PAGETABLES - 1] = MemorySetupPte(newPage);//255
+	
   stackframe = (uint32*)( pcb->sysStackArea + MEM_PAGESIZE - 4);
   // Now that the stack frame points at the bottom of the system stack memory area, we need to
   // move it up (decrement it) by one stack frame size because we're about to fill in the
@@ -499,10 +524,9 @@ uint32 newPage; //tmp page for initialization
   // STUDENT: setup the PTBASE, PTBITS, and PTSIZE here on the current
   // stack frame.
   //----------------------------------------------------------------------
-   stackframe[PROCESS_STACK_PTBASE] = (uint32) pcb->pagetable;
-   stackframe[PROCESS_STACK_PTSIZE] = MEM_L1TABLE_SIZE;//256;
-   stackframe[PROCESS_STACK_PTBITS] = ( MEM_L1FIELD_FIRST_BITNUM << 16) | MEM_L1FIELD_FIRST_BITNUM;
-   //stackframe[PROCESS_STACK_PTBITS] = 0xC000C; //(uint32)((0xc) << 16 + 0xc);
+   stackframe[PROCESS_STACK_PTBASE] = pcb->pagetable;
+   stackframe[PROCESS_STACK_PTSIZE] = (uint32)4;
+   stackframe[PROCESS_STACK_PTBITS] = (uint32)(MEM_L1FIELD_FIRST_BITNUM | MEM_L2FIELD_FIRST_BITNUM << 16);
 
   if (isUser) {
     dbprintf ('p', "About to load %s\n", name);
