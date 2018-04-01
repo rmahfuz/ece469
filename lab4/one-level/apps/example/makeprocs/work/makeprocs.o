@@ -75,29 +75,58 @@ LC0:
 	.ascii "Usage: %s <number of hello world processes to create>\n\000"
 	.align 2
 LC1:
-	.ascii "makeprocs (%d): Creating %d hello_world processes\n\000"
+	.ascii "makeprocs (%d): Bad sem_create\n\000"
 	.align 2
 LC2:
-	.ascii "makeprocs (%d): Bad sem_create\n\000"
+	.ascii "semaphores created\n\000"
 	.align 2
 LC3:
 	.ascii "----------------------------------------------------------------------"
 	.ascii "---------------\n\000"
 	.align 2
 LC4:
-	.ascii "makeprocs (%d): Creating %d hello world\'s in a row, but only one runs"
-	.ascii " at a time\n\000"
+	.ascii "makeprocs (%d): part1: Creating a hello world process\n\000"
 	.align 2
 LC5:
-	.ascii "makeprocs (%d): Creating hello world #%d\n\000"
+	.ascii "part1.dlx.obj\000"
 	.align 2
 LC6:
-	.ascii "hello_world.dlx.obj\000"
+	.ascii "makeprocs (%d): part2: Creating a process to access memory inside the "
+	.ascii "virtual address space, but outside of currently allocated pages\n\000"
 	.align 2
 LC7:
-	.ascii "Bad semaphore s_procs_completed (%d) in %s\n\000"
+	.ascii "part2.dlx.obj\000"
 	.align 2
 LC8:
+	.ascii "makeprocs (%d): part3: Creating a process to cause the user function c"
+	.ascii "all stack to grow larger than one page\n\000"
+	.align 2
+LC9:
+	.ascii "part3.dlx.obj\000"
+	.align 2
+LC10:
+	.ascii "makeprocs (%d): part4: calling the hello world program 100 times\n\000"
+	.align 2
+LC11:
+	.ascii "part4.dlx.obj\000"
+	.align 2
+LC12:
+	.ascii "makeprocs (%d): part5: spawning 30 simultaneous processes\n\000"
+	.align 2
+LC13:
+	.ascii "part5.dlx.obj\000"
+	.align 2
+LC14:
+	.ascii "makeprocs (%d): part6: Creating a process to access memory beyond maxi"
+	.ascii "mum virtual address \n\000"
+	.align 2
+LC15:
+	.ascii "part6.dlx.obj\000"
+	.align 2
+LC16:
+	.ascii "Bad semaphore s_procs_completed (%d) in %s\n\000"
+	.align 2
+LC17:
 	.ascii "makeprocs (%d): All other processes completed, exiting main process.\n"
 	.ascii "\000"
 .text
@@ -138,30 +167,56 @@ L14:
 	sw	8(r29),r7
 	jal	_dstrtol
 	nop	; not filled.
-	add	r4,r0,r1
-	jal	_getpid
+	add	r5,r0,r1
+	addi	r29,r29,#16
+	addi	r2,r5,#-1
+	sgtui	r1,r2,#5
+	bnez	r1,L15
 	nop	; not filled.
-	lhi	r7,((LC1)>>16)&0xffff
-	addui	r7,r7,(LC1)&0xffff
-	sw	(r29),r7
-	sw	4(r29),r1
-	sw	8(r29),r4
-	jal	_Printf
+	slli	r1,r2,#0x2
+	lhi	r7,((L22)>>16)&0xffff
+	addui	r7,r7,(L22)&0xffff
+	add	r1,r1,r7
+	lw	r1,(r1)
+	jr	r1
 	nop	; not filled.
-	addi	r7,r0,#0
-	sw	(r29),r7
+.data
+	.align 2
+L22:
+	.word L19
+	.word L19
+	.word L19
+	.word L20
+	.word L21
+	.word L19
+.text
+L19:
+	addi	r3,r0,#1
+	j	L15
+	nop	; not filled.
+L20:
+	addi	r3,r0,#100
+	j	L15
+	nop	; not filled.
+L21:
+	addi	r3,r0,#30
+L15:
+	addi	r29,r29,#-8
+	addi	r1,r0,#1
+	sub	r1,r1,r3
+	sw	(r29),r1
 	jal	_sem_create
 	nop	; not filled.
-	add	r3,r0,r1
-	addi	r29,r29,#16
-	seqi	r1,r3,#-1
-	beqz	r1,L15
+	addi	r29,r29,#8
+	seqi	r4,r1,#-1
+	snei	r1,r4,#0
+	beqz	r1,L24
 	nop	; not filled.
 	jal	_getpid
 	nop	; not filled.
 	addi	r29,r29,#-8
-	lhi	r7,((LC2)>>16)&0xffff
-	addui	r7,r7,(LC2)&0xffff
+	lhi	r7,((LC1)>>16)&0xffff
+	addui	r7,r7,(LC1)&0xffff
 	sw	(r29),r7
 	sw	4(r29),r1
 	jal	_Printf
@@ -169,11 +224,16 @@ L14:
 	jal	_Exit
 	nop	; not filled.
 	addi	r29,r29,#8
-L15:
+L24:
 	addi	r29,r29,#-8
-	sw	(r29),r3
-	addi	r5,r30,#-24
-	sw	4(r29),r5
+	lhi	r7,((LC2)>>16)&0xffff
+	addui	r7,r7,(LC2)&0xffff
+	sw	(r29),r7
+	jal	_Printf
+	nop	; not filled.
+	sw	(r29),r4
+	addi	r1,r30,#-24
+	sw	4(r29),r1
 	jal	_ditoa
 	nop	; not filled.
 	lhi	r7,((LC3)>>16)&0xffff
@@ -181,6 +241,29 @@ L15:
 	sw	(r29),r7
 	jal	_Printf
 	nop	; not filled.
+	addi	r29,r29,#8
+	addi	r2,r5,#-1
+	sgtui	r1,r2,#5
+	bnez	r1,L25
+	nop	; not filled.
+	slli	r1,r2,#0x2
+	lhi	r7,((L42)>>16)&0xffff
+	addui	r7,r7,(L42)&0xffff
+	add	r1,r1,r7
+	lw	r1,(r1)
+	jr	r1
+	nop	; not filled.
+.data
+	.align 2
+L42:
+	.word L26
+	.word L27
+	.word L28
+	.word L29
+	.word L35
+	.word L41
+.text
+L26:
 	jal	_getpid
 	nop	; not filled.
 	addi	r29,r29,#-8
@@ -188,58 +271,147 @@ L15:
 	addui	r7,r7,(LC4)&0xffff
 	sw	(r29),r7
 	sw	4(r29),r1
-	sw	8(r29),r4
 	jal	_Printf
 	nop	; not filled.
-	addi	r2,r0,#0
-	addi	r29,r29,#16
-	slt	r1,r2,r4
-	beqz	r1,L17
-	nop	; not filled.
-L19:
-	jal	_getpid
-	nop	; not filled.
-	addi	r29,r29,#-16
+	addi	r29,r29,#-8
 	lhi	r7,((LC5)>>16)&0xffff
 	addui	r7,r7,(LC5)&0xffff
-	sw	(r29),r7
-	sw	4(r29),r1
-	sw	8(r29),r2
-	jal	_Printf
+	j	L45
 	nop	; not filled.
+L27:
+	jal	_getpid
+	nop	; not filled.
+	addi	r29,r29,#-8
 	lhi	r7,((LC6)>>16)&0xffff
 	addui	r7,r7,(LC6)&0xffff
 	sw	(r29),r7
-	sw	4(r29),r5
+	sw	4(r29),r1
+	jal	_Printf
+	nop	; not filled.
+	addi	r29,r29,#-8
+	lhi	r7,((LC7)>>16)&0xffff
+	addui	r7,r7,(LC7)&0xffff
+	j	L45
+	nop	; not filled.
+L28:
+	jal	_getpid
+	nop	; not filled.
+	addi	r29,r29,#-8
+	lhi	r7,((LC8)>>16)&0xffff
+	addui	r7,r7,(LC8)&0xffff
+	sw	(r29),r7
+	sw	4(r29),r1
+	jal	_Printf
+	nop	; not filled.
+	addi	r29,r29,#-8
+	lhi	r7,((LC9)>>16)&0xffff
+	addui	r7,r7,(LC9)&0xffff
+	j	L45
+	nop	; not filled.
+L29:
+	jal	_getpid
+	nop	; not filled.
+	addi	r29,r29,#-8
+	lhi	r7,((LC10)>>16)&0xffff
+	addui	r7,r7,(LC10)&0xffff
+	sw	(r29),r7
+	sw	4(r29),r1
+	jal	_Printf
+	nop	; not filled.
+	addi	r2,r0,#0
+	addi	r29,r29,#8
+	addi	r3,r30,#-24
+L33:
+	addi	r29,r29,#-16
+	lhi	r7,((LC11)>>16)&0xffff
+	addui	r7,r7,(LC11)&0xffff
+	sw	(r29),r7
+	sw	4(r29),r3
 	addi	r7,r0,#0
 	sw	8(r29),r7
 	jal	_process_create
 	nop	; not filled.
-	sw	(r29),r3
-	jal	_sem_wait
-	nop	; not filled.
 	addi	r29,r29,#16
-	snei	r1,r1,#1
-	beqz	r1,L18
+	addi	r2,r2,#1
+	slei	r1,r2,#99
+	beqz	r1,L25
 	nop	; not filled.
+	j	L33
+	nop	; not filled.
+L35:
+	jal	_getpid
+	nop	; not filled.
+	addi	r29,r29,#-8
+	lhi	r7,((LC12)>>16)&0xffff
+	addui	r7,r7,(LC12)&0xffff
+	sw	(r29),r7
+	sw	4(r29),r1
+	jal	_Printf
+	nop	; not filled.
+	addi	r2,r0,#0
+	addi	r29,r29,#8
+	addi	r3,r30,#-24
+L39:
 	addi	r29,r29,#-16
-	lhi	r7,((LC7)>>16)&0xffff
-	addui	r7,r7,(LC7)&0xffff
+	lhi	r7,((LC13)>>16)&0xffff
+	addui	r7,r7,(LC13)&0xffff
 	sw	(r29),r7
 	sw	4(r29),r3
-	lw	r7,(r6)
+	addi	r7,r0,#0
 	sw	8(r29),r7
+	jal	_process_create
+	nop	; not filled.
+	addi	r29,r29,#16
+	addi	r2,r2,#1
+	slei	r1,r2,#29
+	beqz	r1,L25
+	nop	; not filled.
+	j	L39
+	nop	; not filled.
+L41:
+	jal	_getpid
+	nop	; not filled.
+	addi	r29,r29,#-8
+	lhi	r7,((LC14)>>16)&0xffff
+	addui	r7,r7,(LC14)&0xffff
+	sw	(r29),r7
+	sw	4(r29),r1
+	jal	_Printf
+	nop	; not filled.
+	addi	r29,r29,#-8
+	lhi	r7,((LC15)>>16)&0xffff
+	addui	r7,r7,(LC15)&0xffff
+L45:
+	sw	(r29),r7
+	addi	r1,r30,#-24
+	sw	4(r29),r1
+	addi	r7,r0,#0
+	sw	8(r29),r7
+	jal	_process_create
+	nop	; not filled.
+	addi	r29,r29,#16
+L25:
+	addi	r29,r29,#-8
+	sw	(r29),r4
+	jal	_sem_wait
+	nop	; not filled.
+	addi	r29,r29,#8
+	snei	r1,r1,#1
+	beqz	r1,L44
+	nop	; not filled.
+	addi	r29,r29,#-16
+	lhi	r7,((LC16)>>16)&0xffff
+	addui	r7,r7,(LC16)&0xffff
+	sw	(r29),r7
+	sw	4(r29),r4
+	lw	r6,(r6)
+	sw	8(r29),r6
 	jal	_Printf
 	nop	; not filled.
 	jal	_Exit
 	nop	; not filled.
 	addi	r29,r29,#16
-L18:
-	addi	r2,r2,#1
-	slt	r1,r2,r4
-	bnez	r1,L19
-	nop	; not filled.
-L17:
+L44:
 	addi	r29,r29,#-8
 	lhi	r7,((LC3)>>16)&0xffff
 	addui	r7,r7,(LC3)&0xffff
@@ -248,8 +420,8 @@ L17:
 	nop	; not filled.
 	jal	_getpid
 	nop	; not filled.
-	lhi	r7,((LC8)>>16)&0xffff
-	addui	r7,r7,(LC8)&0xffff
+	lhi	r7,((LC17)>>16)&0xffff
+	addui	r7,r7,(LC17)&0xffff
 	sw	(r29),r7
 	sw	4(r29),r1
 	jal	_Printf

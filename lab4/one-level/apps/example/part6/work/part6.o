@@ -72,19 +72,23 @@ L11:
 .data
 	.align 2
 LC0:
-	.ascii "Entered hello world with pid: %d\n\000"
-	.align 2
-LC1:
 	.ascii "Usage: %s <handle_to_procs_completed_semaphore>\n\000"
 	.align 2
+LC1:
+	.ascii "part6 (%d): accessing memory beyond maximum virtual address\n\000"
+	.align 2
 LC2:
-	.ascii "hello_world (%d): Hello world!\n\000"
+	.ascii "part6 (%d): Bad semaphore s_procs_completed (%d)!\n\000"
 	.align 2
 LC3:
-	.ascii "hello_world (%d): Bad semaphore s_procs_completed (%d)!\n\000"
+	.ascii "part6 (%d): content of memory location %d is <expect illegal access>: "
+	.ascii "\n \000"
 	.align 2
 LC4:
-	.ascii "hello_world (%d): Done!\n\000"
+	.ascii "%d\n\000"
+	.align 2
+LC5:
+	.ascii "part6 (%d): Done!\n\000"
 .text
 	.align 2
 .proc _main
@@ -99,48 +103,39 @@ _main:
 	lw	r3,4(r30)
 	jal	___main
 	nop	; not filled.
-	jal	_getpid
-	nop	; not filled.
-	addi	r29,r29,#-8
-	lhi	r4,((LC0)>>16)&0xffff
-	addui	r4,r4,(LC0)&0xffff
-	sw	(r29),r4
-	sw	4(r29),r1
-	jal	_Printf
-	nop	; not filled.
-	addi	r29,r29,#8
+	lhi	r4,#64
+	addui	r4,r4,#0
 	snei	r1,r2,#2
 	beqz	r1,L17
 	nop	; not filled.
 	addi	r29,r29,#-8
-	lhi	r4,((LC1)>>16)&0xffff
-	addui	r4,r4,(LC1)&0xffff
-	sw	(r29),r4
+	lhi	r5,((LC0)>>16)&0xffff
+	addui	r5,r5,(LC0)&0xffff
+	sw	(r29),r5
 	jal	_Printf
 	nop	; not filled.
 	jal	_Exit
 	nop	; not filled.
 	addi	r29,r29,#8
 L17:
-	jal	_getpid
-	nop	; not filled.
-	addi	r29,r29,#-8
-	lhi	r4,((LC2)>>16)&0xffff
-	addui	r4,r4,(LC2)&0xffff
-	sw	(r29),r4
-	sw	4(r29),r1
-	jal	_Printf
-	nop	; not filled.
-	addi	r29,r29,#-8
+	addi	r29,r29,#-16
 	lw	r3,4(r3)
 	sw	(r29),r3
-	addi	r4,r0,#0
-	sw	4(r29),r4
-	addi	r4,r0,#10
-	sw	8(r29),r4
+	addi	r5,r0,#0
+	sw	4(r29),r5
+	addi	r5,r0,#10
+	sw	8(r29),r5
 	jal	_dstrtol
 	nop	; not filled.
 	add	r2,r0,r1
+	jal	_getpid
+	nop	; not filled.
+	lhi	r5,((LC1)>>16)&0xffff
+	addui	r5,r5,(LC1)&0xffff
+	sw	(r29),r5
+	sw	4(r29),r1
+	jal	_Printf
+	nop	; not filled.
 	sw	(r29),r2
 	jal	_sem_signal
 	nop	; not filled.
@@ -151,9 +146,9 @@ L17:
 	jal	_getpid
 	nop	; not filled.
 	addi	r29,r29,#-16
-	lhi	r4,((LC3)>>16)&0xffff
-	addui	r4,r4,(LC3)&0xffff
-	sw	(r29),r4
+	lhi	r5,((LC2)>>16)&0xffff
+	addui	r5,r5,(LC2)&0xffff
+	sw	(r29),r5
 	sw	4(r29),r1
 	sw	8(r29),r2
 	jal	_Printf
@@ -164,14 +159,30 @@ L17:
 L18:
 	jal	_getpid
 	nop	; not filled.
-	addi	r29,r29,#-8
-	lhi	r4,((LC4)>>16)&0xffff
-	addui	r4,r4,(LC4)&0xffff
-	sw	(r29),r4
+	addi	r29,r29,#-16
+	lhi	r5,((LC3)>>16)&0xffff
+	addui	r5,r5,(LC3)&0xffff
+	sw	(r29),r5
+	sw	4(r29),r1
+	sw	8(r29),r4
+	jal	_Printf
+	nop	; not filled.
+	lhi	r5,((LC4)>>16)&0xffff
+	addui	r5,r5,(LC4)&0xffff
+	sw	(r29),r5
+	lw	r1,(r4)
 	sw	4(r29),r1
 	jal	_Printf
 	nop	; not filled.
-	addi	r29,r29,#8
+	jal	_getpid
+	nop	; not filled.
+	lhi	r5,((LC5)>>16)&0xffff
+	addui	r5,r5,(LC5)&0xffff
+	sw	(r29),r5
+	sw	4(r29),r1
+	jal	_Printf
+	nop	; not filled.
+	addi	r29,r29,#16
 	jal	_exit
 	nop
 .endproc _main
