@@ -1,0 +1,61 @@
+cd ../../bin; dlxsim -x os.dlx.obj -a -u makeprocs.dlx.obj 5; ee469_fixterminal
+Stack=0x1fffc8, pc starting at 0x11a00
+Got 3 arguments.
+Available memory: 0x393e8 -> 0x200000.
+Argument count is 3.
+Argument 0 is -u.
+Argument 1 is makeprocs.dlx.obj.
+Argument 2 is 5.
+About to initialize queues.
+After initializing queues.
+from memory module init  0
+from memory module init  -33554432
+from memory module init  -1
+from memory module init  -1
+from memory module init  -1
+from memory module init  -1
+from memory module init  -1
+from memory module init  -1
+from memory module init  -1
+from memory module init  -1
+from memory module init  -1
+from memory module init  -1
+from memory module init  -1
+from memory module init  -1
+from memory module init  -1
+from memory module init  -1
+After initializing memory.
+After initializing processes.
+After initializing synchronization tools.
+After initializing synchronization tools.
+After initializing keyboard.
+After initializing synchronization tools.
+After initializing clock.
+VM Descriptor is 0
+Set timer quantum to 10000, about to run first process.
+makeprocs (31): Creating 5 hello_world processes
+-------------------------------------------------------------------------------------
+makeprocs (31): Creating 5 hello world's in a row, but only one runs at a time
+makeprocs (31): Creating hello world #0
+hello_world (30): Hello world!
+hello_world (30): Done!
+makeprocs (31): Creating hello world #1
+hello_world (29): Hello world!
+hello_world (29): Done!
+makeprocs (31): Creating hello world #2
+hello_world (28): Hello world!
+hello_world (28): Done!
+makeprocs (31): Creating hello world #3
+hello_world (27): Hello world!
+hello_world (27): Done!
+makeprocs (31): Creating hello world #4
+hello_world (26): Hello world!
+hello_world (26): Done!
+-------------------------------------------------------------------------------------
+makeprocs (31): All other processes completed, exiting main process.
+No runnable processes - exiting!
+Exiting at program request.
+Instructions executed: 19017936
+Time simulated: 19.018 secs
+Real time elapsed: 1.582 secs
+Execution rate: 12.02M simulated instructions per real second.
