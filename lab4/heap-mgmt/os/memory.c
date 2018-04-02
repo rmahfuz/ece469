@@ -390,6 +390,7 @@ int mfree(PCB* pcb, void *ptr){
           tmp_block = AQueueObject(tmp_link);
           if (tmp_block->inuse == 0){
             h_block->size += tmp_block->size;
+            h_block->vaddr = tmp_block->vaddr;
             AQueueRemove(&(tmp_link));
           }
         }
@@ -403,7 +404,7 @@ int mfree(PCB* pcb, void *ptr){
           }
         }
 
-        
+
         return free_size;
     }
     h_link = AQueueNext(h_link);
