@@ -124,7 +124,7 @@ uint32 MemoryTranslateUserToSystem (PCB *pcb, uint32 addr) {
   physical_addr = ((baseAddr) & 0x1FF000) | offset;
   return physical_addr;
   } else{
-    printf("Invalid page table entry for *pcb = %d, addr = %d\n",*pcb, addr);
+    	printf("Invalid page table entry for *pcb = %d, addr = %d\n",*pcb, addr);
     //pcb->currentSavedFrame[PROCESS_STACK_FAULT] = addr;
     return MemoryPageFaultHandler(pcb);
 
@@ -327,12 +327,7 @@ int mfree(){
 }
 
 //two-level pagetable function for allocate
-void MemoryAllocateL2PT(PCB* pcb, uint32 l1_pageNum){
-	if ((uint32*)(pcb->pagetable[l1_pageNum]) == NULL) 
-		pcb->pagetable[l1_pageNum] = findFreeL2pte();
 
-
-}
 
 uint32* findFreeL2pte(){
 	int i;

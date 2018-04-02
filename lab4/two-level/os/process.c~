@@ -87,8 +87,8 @@ void ProcessModuleInit () {
     // STUDENT: Initialize the PCB's page table here.
     //-------------------------------------------------------
 
-	//currentPCB->npages = 0;
-	pcbs[i].npages = 0;
+	
+	
 
 
 //double check for the "2" thing
@@ -131,7 +131,6 @@ void ProcessSetStatus (PCB *pcb, int status) {
 void ProcessFreeResources (PCB *pcb) {
   int i = 0;
 	int j = 0;
-	int* tmp;
   // Allocate a new link for this pcb on the freepcbs queue
   if ((pcb->l = AQueueAllocLink(pcb)) == NULL) {
     printf("FATAL ERROR: could not get Queue Link in ProcessFreeResources!\n");
@@ -170,12 +169,11 @@ for(i = 0 ; i < 4 ; i++){
 		}
 
 	}
-	//pcb->pagetable[i] = NULL;
-	tmp = pcb->pagetable[i] - 1;
-	*tmp = 0;
+	pcb->pagetable[i] = NULL;
+	
 }
 
-pcb->npages = 0;
+
 MemoryFreePage(pcb->sysStackArea);
 
   ProcessSetStatus (pcb, PROCESS_STATUS_FREE);
@@ -459,7 +457,7 @@ uint32 newPage; //tmp page for initialization
   //---------------------------------------------------------
 
 
-  pcb->npages = 6;
+  
 	
 	//two level
 pcb->pagetable[0] = (uint32)findFreeL2pte();
@@ -525,8 +523,8 @@ pcb->pagetable[3] = (uint32)findFreeL2pte();
   // stack frame.
   //----------------------------------------------------------------------
    stackframe[PROCESS_STACK_PTBASE] = pcb->pagetable;
-   stackframe[PROCESS_STACK_PTSIZE] = MEM_L1TABLE_SIZE;//256;
-   stackframe[PROCESS_STACK_PTBITS] = 0xC000C; //(uint32)((0xc) << 16 + 0xc);
+   stackframe[PROCESS_STACK_PTSIZE] = (uint32)4;
+   stackframe[PROCESS_STACK_PTBITS] = (uint32)(MEM_L1FIELD_FIRST_BITNUM | MEM_L2FIELD_FIRST_BITNUM << 16);
 
   if (isUser) {
     dbprintf ('p', "About to load %s\n", name);
