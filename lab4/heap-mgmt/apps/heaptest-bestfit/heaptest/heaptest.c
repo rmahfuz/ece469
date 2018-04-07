@@ -28,18 +28,18 @@ void main (int argc, char *argv[]) {
   Printf("test: malloc: block4: %d\n", (int) block4);
   
   // free 2 of the blocks
-  ret_mfree = mfree((void*)block2);
-  ret_mfree += mfree((void*)block4);
+  ret_mfree = mfree((void*)block1);
+  ret_mfree += mfree((void*)block3);
 
-  if (ret_mfree < (6 * BLOCKSIZE)){
+  if (ret_mfree < (8 * BLOCKSIZE)){
     Printf("test mfree: failed\n");
     return;
   }
 
   // again malloc single block to test best-fit algo.
-  block2 = (int*)malloc(2 * BLOCKSIZE);
+  block1 = (int*)malloc(3 * BLOCKSIZE);
     
-  Printf("test: malloc: block2 after mfree: %d\n", (int) block2);
+  Printf("test: malloc: block1 after mfree: %d\n", (int) block1);
 
   /* expected output */
   /* test: malloc: block1: 16384 */

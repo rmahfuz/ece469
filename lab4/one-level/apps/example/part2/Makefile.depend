@@ -1,1 +1,0 @@
-work/part2.o: part2.c ../../../include/usertraps.h ../../../include/misc.h
