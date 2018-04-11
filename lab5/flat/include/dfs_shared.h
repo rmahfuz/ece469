@@ -17,6 +17,11 @@ typedef struct dfs_inode {
   // inodes in the filesystem (and to make your life easier).  To do this, 
   // adjust the maximumm length of the filename until the size of the overall inode 
   // is 128 bytes.
+  uint32 inuse;
+  uint32 fileSize;
+  char filename[/*??*/];//TODO should be 44
+  uint32 directAddr[10]; //num of direct addressed blocks
+  uint32 indirectAddr;
 } dfs_inode;
 
 #define DFS_MAX_FILESYSTEM_SIZE 0x1000000  // 16MB
