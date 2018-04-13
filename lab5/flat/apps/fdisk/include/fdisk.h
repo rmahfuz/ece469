@@ -16,5 +16,5 @@ typedef unsigned int uint32;
 #endif
 
 //STUDENT: define additional parameters here, if any
-
+#define FDISK_DATA_BLOCK_START FDISK_FBV_BLOCK_START + 2
 #endif

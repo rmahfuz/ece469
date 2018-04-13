@@ -3,6 +3,11 @@
 
 typedef struct dfs_superblock {
   // STUDENT: put superblock internals here
+  uint32 valid;
+  uint32 fsBlocksize; //DFS block size in bytes
+  uint32 numFsBlocks; //total number of DFS blocks in file system
+  uint32 inodeStartBlock; //Starting block number of array of inodes
+  uint32 fbvStartBlock; // starting block number of free block vector
 } dfs_superblock;
 
 #define DFS_BLOCKSIZE 1024  // Must be an integer multiple of the disk blocksize
@@ -19,7 +24,7 @@ typedef struct dfs_inode {
   // is 128 bytes.
   uint32 inuse;
   uint32 fileSize;
-  char filename[/*??*/];//TODO should be 44
+  char filename[44];//TODO should be 44
   uint32 directAddr[10]; //num of direct addressed blocks
   uint32 indirectAddr;
 } dfs_inode;

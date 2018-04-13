@@ -19,8 +19,12 @@ void main (int argc, char *argv[])
 	// You need to think of the finer details. You can use bzero() to zero out bytes in memory
 
   //Initializations and argc check //TODO
-  int i;
-
+  int i, j;
+  dfs_block tmp_block;
+  sb.fsBlocksize = DFS_BLOCKSIZE;
+  sb.numFsBlocks = FDISK_INODE_NUM_BLOCKS;
+  sb.inodeStartBlock = FDISK_INODE_BLOCK_START;
+  sb.fbvStartBlock = FDISK_FBV_BLOCK_START;
   // Need to invalidate filesystem before writing to it to make sure that the OS
   // doesn't wipe out what we do here with the old version in memory
   // You can use dfs_invalidate(); but it will be implemented in Problem 2. You can just do 
@@ -39,10 +43,15 @@ void main (int argc, char *argv[])
 
   // Write all inodes as not in use and empty (all zeros)
   for (i = 0; i < FDISK_INODE_NUM_BLOCKS/*DFS_INODE_MAX_NUM*/; i++){
-    
+    inodes[i].inuse = 0;
+    for (j = 0; j < 10; j++){
+      inodes[i].directAddr[j] = 0; 
+    }
   }
 
   // Next, setup free block vector (fbv) and write free block vector to the disk
+  FdiskSetFBV(sb.fbvStartBlock);
+
   // Finally, setup superblock as valid filesystem and write superblock and boot record to disk: 
   // boot record is all zeros in the first physical block, and superblock structure goes into the second physical block
   Printf("fdisk (%d): Formatted DFS disk for %d bytes.\n", getpid(), disksize);
@@ -50,4 +59,19 @@ void main (int argc, char *argv[])
 
 int FdiskWriteBlock(uint32 blocknum, dfs_block *b) {
   // STUDENT: put your code here
+}
+
+void FdiskSetFBV(uint32 blockstart){//TODO check if this function works how it is supposed to
+  int element = blockstart / 32;
+  int digit   = blockstart % 32;
+  uint32 mask = 0xFFFFFFFF;
+
+  for (i = 0; i < DFS_MAX_NUM_WORDS; i++){
+    if (i < element)
+      fbv[i] = 0;
+    else if (i == element)
+     fbv[i] = 0xFFFFFFFF&(mask << digit);
+    else if (i > element)
+      fbv[i] = mask;
+  }
 }
