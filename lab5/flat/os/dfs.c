@@ -6,15 +6,18 @@
 #include "dfs.h"
 #include "synch.h"
 
-//static dfs_inode inodes[/*specify size*/ ]; // all inodes
-//static dfs_superblock sb; // superblock
-//static uint32 fbv[/*specify size*/]; // Free block vector
+static dfs_inode inodes[DFS_NUM_INODES ]; // all inodes
+static dfs_superblock sb; // superblock
+static uint32 fbv[DFS_FBV_MAX_NUM_WORDS]; //512 
 
 static uint32 negativeone = 0xFFFFFFFF;
 static inline uint32 invert(uint32 n) { return n ^ negativeone; }
 
 // You have already been told about the most likely places where you should use locks. You may use 
 // additional locks if it is really necessary.
+
+static lock_t fbv_lock;
+static lock_t inode_lock;
 
 // STUDENT: put your file system level functions below.
 // Some skeletons are provided. You can implement additional functions.
@@ -31,7 +34,10 @@ static inline uint32 invert(uint32 n) { return n ^ negativeone; }
 void DfsModuleInit() {
 // You essentially set the file system as invalid and then open 
 // using DfsOpenFileSystem().
-
+	DfsInvalidate();
+	fbv_lock = LockCreate();
+	inode_lock = LockCreate();
+	DfsOpenFileSystem();
 }
 
 //-----------------------------------------------------------------
@@ -44,7 +50,7 @@ void DfsModuleInit() {
 void DfsInvalidate() {
 // This is just a one-line function which sets the valid bit of the 
 // superblock to 0.
-
+	sb.valid = 0;
 }
 
 //-------------------------------------------------------------------
@@ -54,22 +60,73 @@ void DfsInvalidate() {
 //-------------------------------------------------------------------
 
 int DfsOpenFileSystem() {
+//declaration
+	disk_block dskB;
+	dfs_block dfsB;
+	int i;
+	
+
 //Basic steps:
 // Check that filesystem is not already open
-
+	if(sb.valid){
+		printf("ERROR: filesystem is already open.\n");
+		return DFS_FAIL;
+	}
 // Read superblock from disk.  Note this is using the disk read rather 
 // than the DFS read function because the DFS read requires a valid 
 // filesystem in memory already, and the filesystem cannot be valid 
 // until we read the superblock. Also, we don't know the block size 
 // until we read the superblock, either.
+	if(DiskReadBlock(1, &dskB) == DISK_FAIL) {
+		printf("ERROR: DISK READING FAILURE.\n");
+		return DFS_FAIL;
+	}
+//copy the super block to sb
+	bcopy(dskB.data, (char *)&sb, sizeof(sb));
+
+
 
 // Copy the data from the block we just read into the superblock in memory
-
 // All other blocks are sized by virtual block size:
 // Read inodes
 // Read free block vector
+
+
+	if (sb.valid == 0){
+		printf("ERROR: FILESYSTEM IS NOT VALID.\n");
+		return DFS_FAIL;
+	}
+
+	for (i = sb.inodeStartBlock; i < sb.fbvStartBlock; i++){
+		if (DfsReadBlock(i, &dfsB) == DFS_FAIL){
+			printf("ERROR: DFS BLOCK INODES READ FAILURE.\n");
+			return DFS_FAIL;
+		}
+		bcopy(dfsB.data, inodes + ((i-sb.inodeStartBlock) * sb.fsBlocksize), sb.fsBlocksize);
+	}
+
+	//free block vector
+
+	for (i = sb.fbvStartBlock; i < sb.fbvStartBlock + 2; i++){
+		if (DfsReadBlock(i, &dfsB) == DFS_FAIL){
+			printf("ERROR: DFS BLOCK FBV READ FAILURE.\n");
+			return DFS_FAIL;
+		}
+	bcopy(dfsB.data, fbv + ((i-sb.fbvStartBlock) * sb.fsBlocksize), sb.fsBlocksize);
+	}
+
 // Change superblock to be invalid, write back to disk, then change 
 // it back to be valid in memory
+	sb.valid = 0;
+	bzero(dskB.data, DISK_BLOCKSIZE);
+	bcopy(&sb, dskB.data, sizeof(sb));
+	if (DiskWriteBlock(1, &dskB) == DISK_FAIL){
+		printf("ERROR: SUPER BLOCK WRITE BACK FAILURE.\n");
+		return DFS_FAIL;
+	}
+	sb.valid = 1;
+	return DFS_SUCCESS;
+
 
 }
 
