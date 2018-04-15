@@ -24,7 +24,7 @@ typedef struct dfs_inode {
   // is 128 bytes.
   uint32 inuse;
   uint32 fileSize;
-  char filename[44];//TODO should be 44
+  char filename[DFS_MAX_FILENAME_SIZE];//TODO should be 44
   uint32 directAddr[10]; //num of direct addressed blocks
   uint32 indirectAddr;
 } dfs_inode;
@@ -33,7 +33,8 @@ typedef struct dfs_inode {
 
 #define DFS_FAIL -1
 #define DFS_SUCCESS 1
-
-
+#define DFS_NUM_INODES 192
+#define DFS_MAX_FILENAME_SIZE 44
 
 #endif
+
