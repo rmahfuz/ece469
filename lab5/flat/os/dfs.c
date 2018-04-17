@@ -537,7 +537,6 @@ int DfsInodeDelete(uint32 handle) {
 //-----------------------------------------------------------------
 
 int DfsInodeReadBytes(uint32 handle, void *mem, int start_byte, int num_bytes) {
-
 	int i, j;
 	int tmpByte, endByte, writeByte;
 	int startAt, endAt;
@@ -554,13 +553,10 @@ int DfsInodeReadBytes(uint32 handle, void *mem, int start_byte, int num_bytes) {
 		return DFS_FAIL;
 	}
 	
-	
 	tmpByte = start_byte;
 	endByte = start_byte + num_bytes;
 	writeByte = 0;
 
-
-	//for (i = start_byte ; i < start_byte + num_bytes; i++){
 	while (tmpByte<start_byte + num_bytes) {
 		tmpAddr = DfsInodeTranslateVirtualToFilesys(handle, tmpByte/sb.fsBlocksize);
 		if ( tmpAddr== DFS_FAIL){
@@ -579,10 +575,7 @@ int DfsInodeReadBytes(uint32 handle, void *mem, int start_byte, int num_bytes) {
 			tmpByte++; writeByte++;
 		}	
 	}
-	
-	return tmpByte;
-
-
+	return writeByte;
 }
 
 
@@ -596,8 +589,44 @@ int DfsInodeReadBytes(uint32 handle, void *mem, int start_byte, int num_bytes) {
 //-----------------------------------------------------------------
 
 int DfsInodeWriteBytes(uint32 handle, void *mem, int start_byte, int num_bytes) {
+	//Initializations
+	int i, j;
+	int tmpByte, endByte, readByte;
+	int len_to_write; // number of bytes to write
+	uint32 tmpAddr; // virtual block number to write into
+	dfs_block dfsB; // place to store the block to write
 
-
+	//Check if file system is valid
+	if(sb.valid == 0){
+		printf("ERROR: filesystem is not open (DfsInodeDelete).\n");
+		return DFS_FAIL;
+	}
+	//Check if handle is valid
+	if(inodes[handle].inuse == 0){
+		printf("ERROR: inode is not inuse(DfsInodeDelete).\n");
+		return DFS_FAIL;
+	}
+	//Actually do the writing
+	readByte = 0; tmpByte = start_byte;
+	while (readByte < num_bytes) {
+		// allocate a virtual block
+		tmpAddr = DfsInodeAllocateVirtualBlock(handle, tmpByte/sb.fsBlocksize);
+		if ( tmpAddr== DFS_FAIL){
+			printf("ERROR: cannot allocate virtual block(DfsInodeWriteBytes)\n");
+			return DFS_FAIL;
+		}
+		len_to_write = sb.fsBlocksize - (tmpByte % sb.fsBlocksize);
+		bcopy(mem + readByte, dfsB.data + (tmpByte % sb.fsBlocksize), len_to_write);
+		if (DfsWriteBlock(tmpAddr, &dfsB) == DFS_FAIL) {
+			printf("ERROR: Cannot write block into disk (DfsInodeWriteBytes)\n");
+			return DFS_FAIL;
+		}
+		tmpByte += len_to_write; readByte += len_to_write;
+	}
+	//update fileSize
+	if (inodes[handle].fileSize < start_byte + readByte)
+		inodes[handle].fileSize = start_byte + readByte;
+	return readByte;
 }
 
 
@@ -608,10 +637,18 @@ int DfsInodeWriteBytes(uint32 handle, void *mem, int start_byte, int num_bytes) 
 //-----------------------------------------------------------------
 
 uint32 DfsInodeFilesize(uint32 handle) {
-
+	//Check if file system is valid
+	if(sb.valid == 0){
+		printf("ERROR: filesystem is not open (DfsInodeFilesize).\n");
+		return DFS_FAIL;
+	}
+	//Check if handle is valid
+	if(inodes[handle].inuse == 0){
+		printf("ERROR: inode is not inuse(DfsInodeFilesize).\n");
+		return DFS_FAIL;
+	}
+	return inodes[handle].fileSize;
 }
-
-
 //-----------------------------------------------------------------
 // DfsInodeAllocateVirtualBlock allocates a new filesystem block 
 // for the given inode, storing its blocknumber at index 
