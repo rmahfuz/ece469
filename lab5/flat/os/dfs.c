@@ -590,34 +590,44 @@ int DfsInodeReadBytes(uint32 handle, void *mem, int start_byte, int num_bytes) {
 
 int DfsInodeWriteBytes(uint32 handle, void *mem, int start_byte, int num_bytes) {
 	//Initializations
-	int i, j;
-	int tmpByte, endByte, readByte;
-	int len_to_write; // number of bytes to write
+	int i;
+	int tmpByte, readByte;
+	int startAt, len_to_write; // number of bytes to write
 	uint32 tmpAddr; // virtual block number to write into
 	dfs_block dfsB; // place to store the block to write
 
 	//Check if file system is valid
 	if(sb.valid == 0){
-		printf("ERROR: filesystem is not open (DfsInodeDelete).\n");
+		printf("ERROR: filesystem is not open (DfsInodeWriteBytes).\n");
 		return DFS_FAIL;
 	}
 	//Check if handle is valid
 	if(inodes[handle].inuse == 0){
-		printf("ERROR: inode is not inuse(DfsInodeDelete).\n");
+		printf("ERROR: inode is not inuse(DfsInodeWriteBytes).\n");
 		return DFS_FAIL;
 	}
 	//Actually do the writing
 	readByte = 0; tmpByte = start_byte;
 	while (readByte < num_bytes) {
+		// calculate startAt and len_to_write
+		startAt = 0; len_to_write = sb.fsBlocksize;
+		if (tmpByte == start_byte) {   //first time
+			startAt = tmpByte % sb.blockSize;
+			len_to_write = sb.fsBlocksize - (tmpByte % sb.fsBlocksize);
+		}
+		if (tmpByte + sb.fsBlocksize > start_byte + num_bytes) {   //last time
+			len_to_write = tmpByte % sb.fsBlocksize;
+		}
+		//len_to_write = sb.fsBlocksize - (tmpByte % sb.fsBlocksize);
+		bcopy(mem + readByte, dfsB.data + startAt, len_to_write);
+		//bcopy(mem + readByte, dfsB.data + (tmpByte % sb.fsBlocksize), len_to_write);
 		// allocate a virtual block
 		tmpAddr = DfsInodeAllocateVirtualBlock(handle, tmpByte/sb.fsBlocksize);
 		if ( tmpAddr== DFS_FAIL){
 			printf("ERROR: cannot allocate virtual block(DfsInodeWriteBytes)\n");
 			return DFS_FAIL;
 		}
-		len_to_write = sb.fsBlocksize - (tmpByte % sb.fsBlocksize);
-		bcopy(mem + readByte, dfsB.data + (tmpByte % sb.fsBlocksize), len_to_write);
-		if (DfsWriteBlock(tmpAddr, &dfsB) == DFS_FAIL) {
+		if (DfsWriteBlock(tmpAddr, &dfsB) == DFS_FAIL) {  // actual writing
 			printf("ERROR: Cannot write block into disk (DfsInodeWriteBytes)\n");
 			return DFS_FAIL;
 		}
