@@ -638,8 +638,6 @@ int DfsInodeWriteBytes(uint32 handle, void *mem, int start_byte, int num_bytes) 
 		inodes[handle].fileSize = start_byte + readByte;
 	return readByte;
 }
-
-
 //-----------------------------------------------------------------
 // DfsInodeFilesize simply returns the size of an inode's file. 
 // This is defined as the maximum virtual byte number that has 
@@ -701,10 +699,7 @@ uint32 DfsInodeAllocateVirtualBlock(uint32 handle, uint32 virtual_blocknum) {
 //CHECK WITH TA
 			return inodes[handle].directAddr[virtual_blocknum];
 		}
-
-
 	}
-
 	else{
 //virtual_blocknum larger than 10. Access indirect address
 		if (inodes[handle].indirectAddr == 0){
@@ -749,14 +744,7 @@ uint32 DfsInodeAllocateVirtualBlock(uint32 handle, uint32 virtual_blocknum) {
 
 
 	}
-
-
-
 }
-
-
-
-
 //-----------------------------------------------------------------
 // DfsInodeTranslateVirtualToFilesys translates the 
 // virtual_blocknum to the corresponding file system block using 
