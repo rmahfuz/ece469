@@ -668,11 +668,92 @@ uint32 DfsInodeFilesize(uint32 handle) {
 // Return DFS_FAIL on failure, and the newly allocated file system 
 // block number on success.
 //-----------------------------------------------------------------
-
 uint32 DfsInodeAllocateVirtualBlock(uint32 handle, uint32 virtual_blocknum) {
+	int i;
+	dfs_block dfsB;
+	uint32 tmpTable[sb.fsBlocksize/sizeof(uint32)];//in our case 256
+	if(sb.valid == 0){
+		printf("ERROR: filesystem is not open (DfsInodeAllocateVirtualBlock).\n");
+		return DFS_FAIL;
+	}
+
+	if(inodes[handle].inuse == 0){
+		printf("ERROR: inode is not inuse(DfsInodeAllocateVirtualBlock).\n");
+		return DFS_FAIL;
+	}
+
+	if (virtual_blocknum < 0 || virtual_blocknum > sb.fsBlocksize/sizeof(uint32) + 10){
+		printf("ERROR: virtual_blocknum out of bound(DfsInodeAllocateVirtualBlock).\n");
+		return DFS_FAIL;
+	}
+
+	if (virtual_blocknum < 10){
+		if (inodes[handle].directAddr[virtual_blocknum] == 0){
+//this direct addr has never been used, need allocate new block
+			if (inodes[handle].directAddr[virtual_blocknum] = DfsAllocateBlock() == DFS_FAIL){
+				printf("ERROR: directAddr cannot be allocated(DfsInodeAllocateVirtualBlock).\n");
+				return DFS_FAIL;	
+			}
+
+		}
+		else{
+//this direct addr already points to a corresponding file sys block
+//CHECK WITH TA
+			return inodes[handle].directAddr[virtual_blocknum];
+		}
+
+
+	}
+
+	else{
+//virtual_blocknum larger than 10. Access indirect address
+		if (inodes[handle].indirectAddr == 0){
+//indirect address never been initialized, need to allocate indirect Addr first
+			if (inodes[handle].indirectAddr = DfsAllocateBlock() == DFS_FAIL){
+				printf("ERROR: indirectAddr cannot be allocated(DfsInodeAllocateVirtualBlock).\n");
+				return DFS_FAIL;	
+			}
+//initialize the contents of file sys block pointed by indirectAddr to zero
+			bzero(dfsB.data, sb.fsBlocksize);
+			if (DfsWriteBlock(inodes[handle].indirectAddr, &dfsB) == DFS_FAIL){
+				printf("ERROR: cannot write inodes (DfsInodeTranslateVirtualToFilesys).\n");
+				return DFS_FAIL;
+			}		
+			
+
+		}
+
+//now indirectAddr should be available, now allocating
+		bzero(dfsB.data, sb.fsBlocksize);
+		if (DfsReadBlock(inodes[handle].indirectAddr, &dfsB) == DFS_FAIL){
+			printf("ERROR: cannot read inode (DfsInodeTranslateVirtualToFilesys).\n");
+			return DFS_FAIL;
+		}		
+		bcopy(dfsB.data, tmpTable, sb.fsBlocksize);
+
+//CHECK WITH TA		
+		if (tmpTable[virtual_blocknum-10] == 0){
+			if ((tmpTable[virtual_blocknum-10] = DfsAllocateBlock()) == DFS_FAIL){
+				printf("ERROR: indirectAddr ele cannot be allocated(DfsInodeAllocateVirtualBlock).\n");
+				return DFS_FAIL;
+			}
+		}
+
+		bcopy(tmpTable, dfsB.data, sb.fsBlocksize);
+		if (DfsWriteBlock(inodes[handle].indirectAddr, &dfsB) == DFS_FAIL){
+			printf("ERROR: cannot read inode (DfsInodeTranslateVirtualToFilesys).\n");
+			return DFS_FAIL;
+		}
+		
+		return tmpTable[virtual_blocknum];
+
+
+	}
+
 
 
 }
+
 
 
 
@@ -723,3 +804,4 @@ uint32 DfsInodeTranslateVirtualToFilesys(uint32 handle, uint32 virtual_blocknum)
 	}
 
 }
+
