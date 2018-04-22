@@ -13,8 +13,7 @@ typedef struct dfs_superblock {
 #define DFS_BLOCKSIZE 1024  // Must be an integer multiple of the disk blocksize
 #define DFS_FBV_MAX_NUM_WORDS 512
 #define DFS_MAX_FILESYSTEM_SIZE 0x1000000  // 16MB
-#define DFS_NUM_FSBLOCKS 16384
- 
+#define DFS_NUM_FSBLOCKS 16384 
 #define DFS_FAIL -1
 #define DFS_SUCCESS 1
 #define DFS_NUM_INODES 192

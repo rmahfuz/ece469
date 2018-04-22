@@ -11,11 +11,11 @@
 // STUDENT: put your file-level functions here
 
 void FileModuleInit(){}
-uint32 FileOpen(){return 0;}
-int FileClose(){return 0;}
-int FileRead(){return 0;}
-int FileWrite(){return 0;}
-int FileSeek(){return 0;}
-int FileDelete(){return 0;}
-uint32 FileDescFilenameExists(){return 0;}
+uint32 FileOpen(){}
+int FileClose(){}
+int FileRead(){}
+int FileWrite(){}
+int FileSeek(){}
+int FileDelete(){}
+uint32 FileDescFilenameExists(){}
 
