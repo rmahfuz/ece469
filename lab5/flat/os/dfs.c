@@ -212,10 +212,10 @@ uint32 mask = 0x1;
 	}
 
 // Find the first free block using the free block vector (FBV), mark it in use
-	/*if (LockHandleAcquire(lock_fbv) != SYNC_SUCCESS){
+	if (LockHandleAcquire(lock_fbv) != SYNC_SUCCESS){
 		printf("ERROR: cannot get lock when allocating block(DfsAllocateBlock)\n");
 		return DFS_FAIL;
-	}*/
+	}
 
 //loop through fbv to find the availabe bit
 
@@ -226,19 +226,19 @@ uint32 mask = 0x1;
 		for (j = 0 ; j < 32 ; j++){
 			if (tmp & mask){
 				fbv[i] ^= mask;
-				/*if (LockHandleRelease(lock_fbv) != SYNC_SUCCESS){
+				if (LockHandleRelease(lock_fbv) != SYNC_SUCCESS){
 					printf("ERROR: cannot release lock(DfsAllocateBlock)\n");
 					return DFS_FAIL;
-				}*/
+				}
 				return i*32 + j;
 			}
 			mask = mask << 1;
 		}
 	}
-	/*if (LockHandleRelease(lock_fbv) != SYNC_SUCCESS){
+	if (LockHandleRelease(lock_fbv) != SYNC_SUCCESS){
 		printf("ERROR: cannot release lock(DfsAllocateBlock)\n");
 		return DFS_FAIL;
-	}*/
+	}
 	printf("ERROR: no available block in fbv. \n");
 	return DFS_FAIL;
 }
@@ -259,10 +259,10 @@ int DfsFreeBlock(uint32 blocknum) {
 		return DFS_FAIL;
 	}
 
-	/*if (LockHandleAcquire(lock_fbv) != SYNC_SUCCESS){
+	if (LockHandleAcquire(lock_fbv) != SYNC_SUCCESS){
 		printf("ERROR: cannot get lock when allocating block(DfsFreeBlock)\n");
 		return DFS_FAIL;
-	}*/
+	}
 	
 	divide = blocknum /32;
 	remain = blocknum % 32;
@@ -273,10 +273,10 @@ int DfsFreeBlock(uint32 blocknum) {
 	}
 	fbv[divide] = fbv[divide] ^ (mask << remain);
 
-	/*if (LockHandleRelease(lock_fbv) != SYNC_SUCCESS){
+	if (LockHandleRelease(lock_fbv) != SYNC_SUCCESS){
 		printf("ERROR: cannot release lock(DfsFreeBlock)\n");
 		return DFS_FAIL;
-	}*/
+	}
 	return DFS_SUCCESS;
 }
 
@@ -402,10 +402,10 @@ uint32 DfsInodeOpen(char *filename) {
 	//printf("going to acquire lock to open inode array (DfsInodeOpen)\n");
 	//printf("(LockHandleAcquire(lock_inode == SYNC_FAIL) : %d \n", (LockHandleAcquire(lock_inode) == SYNC_FAIL));
 	//while (LockHandleAcquire(lock_inode) != SYNC_SUCCESS);
-	/*if (LockHandleAcquire(lock_inode) != SYNC_SUCCESS){
+	if (LockHandleAcquire(lock_inode) != SYNC_SUCCESS){
 		printf("ERROR: cannot get lock when opening inode array(DfsInodeOpen)\n");
 		return DFS_FAIL;
-	}*/
+	}
 	
 	for (i = 0 ; i < DFS_NUM_INODES ; i++){
 		if (inodes[i].inuse == 1) continue;
@@ -419,10 +419,10 @@ uint32 DfsInodeOpen(char *filename) {
 		break;
 	}
 	
-	/*if (LockHandleRelease(lock_inode) != SYNC_SUCCESS){
+	if (LockHandleRelease(lock_inode) != SYNC_SUCCESS){
 		printf("ERROR: cannot release lock(DfsInodeOpen)\n");
 		return DFS_FAIL;
-	}*/
+	}
 
 	if (i == DFS_NUM_INODES){
 		printf("ERROR: cannot create a new inode because the array is full\n");
@@ -502,17 +502,17 @@ int DfsInodeDelete(uint32 handle) {
 	inodes[handle].indirectAddr = 0;
 
 	
-	/*if (LockHandleAcquire(lock_inode) != SYNC_SUCCESS){
+	if (LockHandleAcquire(lock_inode) != SYNC_SUCCESS){
 		printf("ERROR: cannot get lock when deleting inode(DfsInodeDelete)\n");
 		return DFS_FAIL;
-	}*/
+	}
 
 	inodes[handle].inuse = 0;
 	
-	/*if (LockHandleRelease(lock_inode) != SYNC_SUCCESS){
+	if (LockHandleRelease(lock_inode) != SYNC_SUCCESS){
 		printf("ERROR: cannot release lock when deleting inode(DfsInodeDelete)\n");
 		return DFS_FAIL;
-	}*/
+	}
 	
 	return DFS_SUCCESS;
 

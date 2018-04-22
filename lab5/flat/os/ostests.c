@@ -17,7 +17,7 @@ void RunOSTests() {
 	char flower5[] = "lotus is found in muddy water";
 	char buffer[1024];
 	
-	//Initial testing:
+	/*//Initial testing:
 	printf("checking if flowers.txt exists (should not exist) : %d\n", DfsInodeFilenameExists("flowers.txt"));
 	file_handle = DfsInodeOpen("flowers.txt");
 	//printf("finished opening file\n");
@@ -28,9 +28,9 @@ void RunOSTests() {
 	printf("checking if flowers.txt exists (should exist) : %d\n", DfsInodeFilenameExists("flowers.txt"));
 	printf("File size of flowers.txt (should be 63): %d\n", DfsInodeFilesize(file_handle));
 	DfsInodeDelete(file_handle);
-	printf("deleted flowers.txt\n");
+	printf("deleted flowers.txt\n");*/
 
-	/*//testing across runs of the simulator:
+	//testing across runs of the simulator:
 	if (DfsInodeFilenameExists("flowers.txt") == DFS_FAIL) { //then open the file and write something into it
 		file_handle = DfsInodeOpen("flowers.txt");
 		DfsInodeWriteBytes(file_handle, flower1, 50, dstrlen(flower1) + 1);  //testing normal write
@@ -55,6 +55,6 @@ void RunOSTests() {
 	DfsInodeReadBytes(file_handle, buffer, 15355, dstrlen(flower4) + 1);
 	printf("read buffer should be 'rose is a beautiful flower': %s\n", buffer);
 	printf("File size of flowers.txt (should be %d): %d\n", 15355 + dstrlen(flower4) + 1, DfsInodeFilesize(file_handle));
-	//DfsInodeDelete(file_handle);*/
+	//DfsInodeDelete(file_handle);
 }
 
