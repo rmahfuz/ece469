@@ -98,13 +98,16 @@ int FileClose(int file_handle){
 }
 
 int FileRead(int file_handle, void *mem, int num_bytes){
-
-	if (fdsArray[file_handle].mode != 1){
+	if (fdsArray[file_handle].inuse != 1){
+		printf("ERROR: file is not inuse(FILEREAD)\n");
+		return FILE_FAIL;
+	}
+	if (fdsArray[file_handle].mode != 1 && fdsArray[file_handle].mode != 3){
 		printf("ERROR: the file handle is not in read mode(FILEREAD)\n");
 		return FILE_FAIL;
 	}
 	if (num_bytes > 4096 || num_bytes < 0){
-		printf("ERROR: number of bytes to write is not allowed (FileRead)\n");
+		printf("ERROR: number of bytes to read is not allowed (FileRead)\n");
 		return FILE_FAIL;
 	}
 	if (fdsArray[file_handle].eof != 0){
@@ -116,7 +119,8 @@ int FileRead(int file_handle, void *mem, int num_bytes){
 
 	if (fdsArray[file_handle].currentposition + num_bytes > 
 		DfsInodeFilesize(fdsArray[file_handle].inode)){
-			num_bytes = DfsInodeFilesize(fdsArray[file_handle].inode) 
+		printf("WARNING: read bytes beyond filesize\n");
+		num_bytes = DfsInodeFilesize(fdsArray[file_handle].inode) 
 							- fdsArray[file_handle].currentposition;
 	}	
 	if (DfsInodeReadBytes(fdsArray[file_handle].inode, mem, 
@@ -130,8 +134,49 @@ int FileRead(int file_handle, void *mem, int num_bytes){
 
 
 }
-int FileWrite(){return 0;}
-int FileSeek(){return 0;}
-int FileDelete(){return 0;}
+int FileWrite(int file_handle, void *mem, int num_bytes){
+	if (fdsArray[file_handle].inuse != 1){
+		printf("ERROR: file is not inuse(FILEREAD)\n");
+		return FILE_FAIL;
+	}
+	if (fdsArray[file_handle].mode != 2 && fdsArray[file_handle].mode != 3){
+		printf("ERROR: the file handle is not in write mode(FILEWRITE)\n");
+		return FILE_FAIL;
+	}
+	if (num_bytes > 4096 || num_bytes < 0){
+		printf("ERROR: number of bytes to write is not allowed (FileRead)\n");
+		return FILE_FAIL;
+	}
+	if (fdsArray[file_handle].eof != 0){
+		printf("ERROR: reached the end of the file, cannot write\n");
+		return FILE_FAIL;
+	}
+	if (fdsArray[file_handle].currentposition + num_bytes > 
+		DfsInodeFilesize(fdsArray[file_handle].inode)){
+		printf("WARNING: write bytes beyond filesize\n");
+		num_bytes = DfsInodeFilesize(fdsArray[file_handle].inode) 
+							- fdsArray[file_handle].currentposition;
+	}	
+
+	if (DfsInodeWriteBytes(fdsArray[file_handle].inode, mem, 
+				fdsArray[file_handle].currentposition, num_bytes) == DFS_FAIL){
+		printf("ERROR: cannot read from inode\n");
+		return FILE_FAIL;
+	}
+	fdsArray[file_handle].currentposition = fdsArray[file_handle].currentposition + num_bytes;
+	return num_bytes;
+
+
+}
+int FileSeek(int file_handle, int num_bytes, int from_where){
+	
+}
+int FileDelete(char *filename){
+	if (DfsInodeDelete(DfsInodeFilenameExists(filename)) == DFS_FAIL){
+		printf("ERROR: delete file unsuccessful\n");
+		return FILE_FAIL;
+	}
+	return FILE_SUCCESS;
+}
 uint32 FileDescFilenameExists(){return 0;}
 
