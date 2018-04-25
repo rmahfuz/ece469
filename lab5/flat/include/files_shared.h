@@ -13,9 +13,9 @@ typedef struct file_descriptor {
   // STUDENT: put file descriptor info here
 	uint32 inuse;
 	char filename[FILE_MAX_FILENAME_LENGTH];
-	dfs_inode inode;
-	char eof;
-	char mode;
+	uint32 inode;
+	int eof;
+	int mode;//1->read; 2->write ; 3-> readwrite
 	uint32 currentposition;
 	int processid;
 } file_descriptor;
