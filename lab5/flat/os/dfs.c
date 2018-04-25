@@ -10,8 +10,8 @@ static dfs_inode inodes[DFS_NUM_INODES ]; // all inodes
 static dfs_superblock sb; // superblock
 static uint32 fbv[DFS_FBV_MAX_NUM_WORDS]; //512 
 
-static uint32 negativeone = 0xFFFFFFFF;
-static inline uint32 invert(uint32 n) { return n ^ negativeone; }
+//static uint32 negativeone = 0xFFFFFFFF;
+//static inline uint32 invert(uint32 n) { return n ^ negativeone; }
 
 // You have already been told about the most likely places where you should use locks. You may use 
 // additional locks if it is really necessary.
@@ -51,8 +51,8 @@ void DfsModuleInit() {
 // You essentially set the file system as invalid and then open 
 // using DfsOpenFileSystem().
 	DfsInvalidate();
-	if (lock_fbv = LockCreate() == SYNC_FAIL) { printf("ERROR: Could not create lock for free block vector\n"); }
-	if (lock_inode = LockCreate() == SYNC_FAIL) { printf("ERROR: Could not create lock for inode\n"); }
+	if ((lock_fbv = LockCreate()) == SYNC_FAIL) { printf("ERROR: Could not create lock for free block vector\n"); }
+	if ((lock_inode = LockCreate()) == SYNC_FAIL) { printf("ERROR: Could not create lock for inode\n"); }
 	//printf("lock_fbv = %d\n", lock_fbv); printf("lock_inode = %d\n", lock_inode);
 	DfsOpenFileSystem();
 }
@@ -119,7 +119,7 @@ int DfsOpenFileSystem() {
 			printf("ERROR: DFS BLOCK INODES READ FAILURE.\n");
 			return DFS_FAIL;
 		}
-		bcopy(dfsB.data, inodes + ((i-sb.inodeStartBlock) * sb.fsBlocksize), sb.fsBlocksize);
+		bcopy((char*) dfsB.data, (char*)inodes + ((i-sb.inodeStartBlock) * sb.fsBlocksize), sb.fsBlocksize);
 	}
 
 	//free block vector
@@ -129,14 +129,14 @@ int DfsOpenFileSystem() {
 			printf("ERROR: DFS BLOCK FBV READ FAILURE.\n");
 			return DFS_FAIL;
 		}
-	bcopy(dfsB.data, fbv + ((i-sb.fbvStartBlock) * sb.fsBlocksize), sb.fsBlocksize);
+	bcopy((char*) dfsB.data, (char*)fbv + ((i-sb.fbvStartBlock) * sb.fsBlocksize), sb.fsBlocksize);
 	}
 
 // Change superblock to be invalid, write back to disk, then change 
 // it back to be valid in memory
 	sb.valid = 0;
 	bzero(dskB.data, DISK_BLOCKSIZE);
-	bcopy(&sb, dskB.data, sizeof(sb));
+	bcopy((char*) &sb, (char*) dskB.data, sizeof(sb));
 	if (DiskWriteBlock(1, &dskB) == DISK_FAIL){
 		printf("ERROR: SUPER BLOCK WRITE BACK FAILURE.\n");
 		return DFS_FAIL;
@@ -168,7 +168,7 @@ int DfsCloseFileSystem() {
 
 	
 	for (i = sb.inodeStartBlock; i < sb.fbvStartBlock; i++){
-		bcopy(inodes + ((i-sb.inodeStartBlock) * sb.fsBlocksize), dfsB.data, sb.fsBlocksize);
+		bcopy((char*) inodes + ((i-sb.inodeStartBlock) * sb.fsBlocksize), (char*) dfsB.data, sb.fsBlocksize);
 		if (DfsWriteBlock(i, &dfsB) == DFS_FAIL){
 			printf("ERROR: DFS BLOCK INODES write FAILURE (DfsCloseFileSystem).\n");
 			return DFS_FAIL;
@@ -178,7 +178,7 @@ int DfsCloseFileSystem() {
 
 	//write fbv
 	for (i = sb.fbvStartBlock; i < sb.fbvStartBlock + 2; i++){
-		bcopy(fbv + ((i-sb.fbvStartBlock) * sb.fsBlocksize), dfsB.data, sb.fsBlocksize);
+		bcopy((char*) fbv + ((i-sb.fbvStartBlock) * sb.fsBlocksize), (char*) dfsB.data, sb.fsBlocksize);
 		if (DfsWriteBlock(i, &dfsB) == DFS_FAIL){
 			printf("ERROR: DFS BLOCK FBV WRITE FAILURE (DfsCloseFileSystem).\n");
 			return DFS_FAIL;
@@ -186,7 +186,7 @@ int DfsCloseFileSystem() {
 	}
 	//write sb
 	bzero(dskB.data, DISK_BLOCKSIZE);
-	bcopy(&sb, dskB.data, sizeof(sb));
+	bcopy((char*) &sb, (char*) dskB.data, sizeof(sb));
 	if (DiskWriteBlock(1, &dskB) == DISK_FAIL){
 		printf("ERROR: SUPER BLOCK WRITE BACK FAILURE(DfsCloseFileSystem).\n");
 		return DFS_FAIL;
@@ -309,7 +309,7 @@ int DfsReadBlock(uint32 blocknum, dfs_block *b) {
 			printf("ERROR: cannot read block from DSK (DfsReadBlock).\n");
 			return DFS_FAIL;
 		}
-		bcopy(dskB.data, b->data + (i * DISK_BLOCKSIZE), DISK_BLOCKSIZE);
+		bcopy((char*) dskB.data, (char*) b->data + (i * DISK_BLOCKSIZE), DISK_BLOCKSIZE);
 	}
 	
 	return sb.fsBlocksize;
@@ -469,7 +469,7 @@ int DfsInodeDelete(uint32 handle) {
 			printf("ERROR: cannot read inode (DfsInodeDelete).\n");
 			return DFS_FAIL;
 		}		
-		bcopy(dfsB.data, tmpTable, sb.fsBlocksize);
+		bcopy(dfsB.data, (char*) tmpTable, sb.fsBlocksize);
 		//for (i = 0; i < sizeof(tmpTable); i++){
 		for (i = 0; i < sb.fsBlocksize/sizeof(uint32); i++){
 			if (tmpTable[i] == 0) continue;
@@ -511,12 +511,12 @@ int DfsInodeReadBytes(uint32 handle, void *mem, int start_byte, int num_bytes) {
 	dfs_block dfsB;
 
 	if(sb.valid == 0){
-		printf("ERROR: filesystem is not open (DfsInodeDelete).\n");
+		printf("ERROR: filesystem is not open (DfsInodeReadBytes).\n");
 		return DFS_FAIL;
 	}
 	
 	if(inodes[handle].inuse == 0){
-		printf("ERROR: inode is not inuse(DfsInodeDelete).\n");
+		printf("ERROR: inode is not inuse(DfsInodeReadBytes).\n");
 		return DFS_FAIL;
 	}
 	
@@ -565,7 +565,7 @@ int DfsInodeReadBytes(uint32 handle, void *mem, int start_byte, int num_bytes) {
 
 int DfsInodeWriteBytes(uint32 handle, void *mem, int start_byte, int num_bytes) {
 	//Initializations
-	int i;
+	//int i;
 	int tmpByte, readByte;
 	int startAt, len_to_write; // number of bytes to write
 	uint32 tmpAddr; // virtual block number to write into
@@ -648,7 +648,7 @@ uint32 DfsInodeFilesize(uint32 handle) {
 // block number on success.
 //-----------------------------------------------------------------
 uint32 DfsInodeAllocateVirtualBlock(uint32 handle, uint32 virtual_blocknum) {
-	int i;
+	//int i;
 	dfs_block dfsB;
 	uint32 tmpTable[sb.fsBlocksize/sizeof(uint32)];//in our case 256
 	if(sb.valid == 0){
@@ -704,7 +704,7 @@ uint32 DfsInodeAllocateVirtualBlock(uint32 handle, uint32 virtual_blocknum) {
 			printf("ERROR: cannot read inode (DfsInodeTranslateVirtualToFilesys).\n");
 			return DFS_FAIL;
 		}		
-		bcopy(dfsB.data, tmpTable, sb.fsBlocksize);
+		bcopy(dfsB.data, (char*) tmpTable, sb.fsBlocksize);
 
 //CHECK WITH TA		
 		if (tmpTable[virtual_blocknum-10] == 0){
@@ -715,7 +715,7 @@ uint32 DfsInodeAllocateVirtualBlock(uint32 handle, uint32 virtual_blocknum) {
 			}
 		}
 
-		bcopy(tmpTable, dfsB.data, sb.fsBlocksize);
+		bcopy((char*) tmpTable, (char*) dfsB.data, sb.fsBlocksize);
 		if (DfsWriteBlock(inodes[handle].indirectAddr, &dfsB) == DFS_FAIL){
 			printf("ERROR: cannot read inode (DfsInodeTranslateVirtualToFilesys).\n");
 			return DFS_FAIL;
@@ -730,7 +730,7 @@ uint32 DfsInodeAllocateVirtualBlock(uint32 handle, uint32 virtual_blocknum) {
 //-----------------------------------------------------------------
 
 uint32 DfsInodeTranslateVirtualToFilesys(uint32 handle, uint32 virtual_blocknum) {
-	int i;
+	//int i;
 	dfs_block dfsB;
 	uint32 tmpTable[sb.fsBlocksize/sizeof(uint32)];//in our case 256
 
@@ -757,7 +757,7 @@ uint32 DfsInodeTranslateVirtualToFilesys(uint32 handle, uint32 virtual_blocknum)
 			printf("ERROR: cannot read inode (DfsInodeTranslateVirtualToFilesys).\n");
 			return DFS_FAIL;
 		}		
-		bcopy(dfsB.data, tmpTable, sb.fsBlocksize);
+		bcopy((char*) dfsB.data, (char*) tmpTable, sb.fsBlocksize);
 
 		if (virtual_blocknum >= (sb.fsBlocksize/sizeof(uint32)) + 10){
 			printf("ERROR: virtual_blocknum is too big (DfsInodeTranslateVirtualToFilesys).\n");

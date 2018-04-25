@@ -7,20 +7,17 @@
 #define FILE_MODE_R 0x1;
 #define FILE_MODE_W 0x2;
 #define FILE_MODE_RW 0x3;
-
 */
+
+#define FILE_MAX_OPEN_FILES 15
+
 void FileModuleInit();
-uint32 FileOpen();
-int FileClose();
-int FileRead();
-int FileWrite();
-int FileSeek();
-int FileDelete();
-uint32 FileDescFilenameExists();
-
-
-//#define FILE_MAX_OPEN_FILES 15
-
-
+uint32 FileOpen(char *filename, char *mode);
+int FileClose(int file_handle);
+int FileRead(int file_handle, void *mem, int num_bytes);
+int FileWrite(int file_handle, void *mem, int num_bytes);
+int FileSeek(int file_handle, int num_bytes, int from_where);
+int FileDelete(char *filename);
+//uint32 FileDescFilenameExists();
 
 #endif
