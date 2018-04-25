@@ -431,8 +431,6 @@ uint32 DfsInodeOpen(char *filename) {
 	return i;
 
 }
-
-
 //-----------------------------------------------------------------
 // DfsInodeDelete de-allocates any data blocks used by this inode, 
 // including the indirect addressing block if necessary, then mark 
@@ -440,7 +438,6 @@ uint32 DfsInodeOpen(char *filename) {
 // "inuse" flag in an inode.Return DFS_FAIL on failure, and 
 // DFS_SUCCESS on success.
 //-----------------------------------------------------------------
-
 int DfsInodeDelete(uint32 handle) {
 	int i;
 	dfs_block dfsB;
@@ -449,20 +446,12 @@ int DfsInodeDelete(uint32 handle) {
 		printf("ERROR: filesystem is not open (DfsInodeDelete).\n");
 		return DFS_FAIL;
 	}
-	
 	if(inodes[handle].inuse == 0){
 		printf("ERROR: inode is not inuse(DfsInodeDelete).\n");
 		return DFS_FAIL;
 	}
-
-//filesize set to zero
-	
-	inodes[handle].fileSize = 0;
-
-//filename set to zero
-
-	bzero(inodes[handle].filename, DFS_MAX_FILENAME_SIZE);
-
+	inodes[handle].fileSize = 0;//filesize set to zero
+	bzero(inodes[handle].filename, DFS_MAX_FILENAME_SIZE);//filename set to zero
 //free direct array
 	for(i = 0; i < 10 ; i++){
 		if (inodes[handle].directAddr[i] != 0){
@@ -471,61 +460,49 @@ int DfsInodeDelete(uint32 handle) {
 				return DFS_FAIL;
 			}
 			inodes[handle].directAddr[i] = 0;
-
 		}
-		break;
+		//break;
 	}
-
 //free contents in indirectAddr
-	if (DfsReadBlock(inodes[handle].indirectAddr, &dfsB) == DFS_FAIL){
-		printf("ERROR: cannot read inode (DfsInodeDelete).\n");
-		return DFS_FAIL;
-	}		
-	bcopy(dfsB.data, tmpTable, sb.fsBlocksize);
-	for (i = 0; i < sizeof(tmpTable); i++){
-		if (tmpTable[i] == 0) break;
-		if (DfsFreeBlock(tmpTable[i]) == DFS_FAIL){
-			printf("ERROR: cannot free element in indirect table (DfsInodeDelete).\n");
+	if (inodes[handle].indirectAddr != 0) {
+		if (DfsReadBlock(inodes[handle].indirectAddr, &dfsB) == DFS_FAIL){
+			printf("ERROR: cannot read inode (DfsInodeDelete).\n");
 			return DFS_FAIL;
+		}		
+		bcopy(dfsB.data, tmpTable, sb.fsBlocksize);
+		//for (i = 0; i < sizeof(tmpTable); i++){
+		for (i = 0; i < sb.fsBlocksize/sizeof(uint32); i++){
+			if (tmpTable[i] == 0) continue;
+			if (DfsFreeBlock(tmpTable[i]) == DFS_FAIL){
+				printf("ERROR: cannot free element in indirect table (DfsInodeDelete).\n");
+				return DFS_FAIL;
+			}
 		}
-
-	}
-//free indirectAddr itself
-	if (inodes[handle].indirectAddr != 0){
+		//free indirectAddr itself
 		if (DfsFreeBlock(inodes[handle].indirectAddr) == DFS_FAIL){
 			printf("ERROR: cannot free indirectAddr itself (DfsInodeDelete).\n");
 			return DFS_FAIL;
 		}
-
 	}
-
 	inodes[handle].indirectAddr = 0;
-
-	
 	if (LockHandleAcquire(lock_inode) != SYNC_SUCCESS){
 		printf("ERROR: cannot get lock when deleting inode(DfsInodeDelete)\n");
 		return DFS_FAIL;
 	}
-
 	inodes[handle].inuse = 0;
-	
 	if (LockHandleRelease(lock_inode) != SYNC_SUCCESS){
 		printf("ERROR: cannot release lock when deleting inode(DfsInodeDelete)\n");
 		return DFS_FAIL;
 	}
-	
+	//write inodes[handle] back
 	return DFS_SUCCESS;
-
 }
-
-
 //-----------------------------------------------------------------
 // DfsInodeReadBytes reads num_bytes from the file represented by 
 // the inode handle, starting at virtual byte start_byte, copying 
 // the data to the address pointed to by mem. Return DFS_FAIL on 
 // failure, and the number of bytes read on success.
 //-----------------------------------------------------------------
-
 int DfsInodeReadBytes(uint32 handle, void *mem, int start_byte, int num_bytes) {
 	int  j;
 	int tmpByte, writeByte;

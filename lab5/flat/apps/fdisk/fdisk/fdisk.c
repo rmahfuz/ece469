@@ -53,16 +53,18 @@ void main (int argc, char *argv[])
 
   // Next, setup free block vector (fbv) and write free block vector to the disk
   bzero(tmpblock.data, sb.fsBlocksize);
-  for (i = sb.fbvStartBlock; i < sb.fbvStartBlock +2; i++){//can we assume always 2. yes
+  /*for (i = sb.fbvStartBlock; i < sb.fbvStartBlock +2; i++){//can we assume always 2. yes
     FdiskWriteBlock(i, &tmpblock);
-  }
+  }*/
   
   FdiskSetFBV(sb.fbvStartBlock+2);
  
-  for (i = sb.fbvStartBlock; i < sb.fbvStartBlock + 2; i++){
-    //bcopy((char *)(fbv + (i - sb.fbvStartBlock) * (sb.fsBlocksize/sizeof(uint32))) , tmpblock.data, sb.fsBlocksize); //TODO replace hard coded values (ask TA)
-    bcopy((char *)(fbv + (i - sb.fbvStartBlock) * 512) , tmpblock.data, sb.fsBlocksize); //TODO replace hard coded values (ask TA)
-    FdiskWriteBlock(i, &tmpblock);
+  for (i = sb.fbvStartBlock; i < sb.fbvStartBlock + 2; i++){ // i = 19; i < 21; i++ (i = 19, i = 20)
+    bcopy((char *)(fbv + ((i - sb.fbvStartBlock) * 1024)) , tmpblock.data, sb.fsBlocksize); //TODO replace hard coded values (ask TA)
+    //bcopy((char *)(fbv + (i - sb.fbvStartBlock) * 1024) , tmpblock.data, sb.fsBlocksize); //TODO replace hard coded values (ask TA)
+    //bcopy((fbv + ((i - sb.fbvStartBlock) * 256)) , tmpblock.data, sb.fsBlocksize); //TODO replace hard coded values (ask TA)
+    //bcopy((fbv + (i - sb.fbvStartBlock) * 0) , tmpblock.data, sb.fsBlocksize); 
+    FdiskWriteBlock(i, &tmpblock);  //writing 1024 bytes
   }
   // Finally, setup superblock as valid filesystem and write superblock and boot record to disk: 
   sb.valid = 1;
@@ -83,6 +85,7 @@ int FdiskWriteBlock(uint32 blocknum, dfs_block *b) {//takes filesystem blocknum;
     Printf("DISK_FAIL: Cannot write block 2 in FDiskWriteBlock\n");
 		return DISK_FAIL; Exit();
   }
+  Printf("just wrote to disk block %d and %d\n", blocknum*2, blocknum*2 + 1);
 	return DFS_BLOCKSIZE;
 }
 
@@ -99,6 +102,7 @@ void FdiskSetFBV(uint32 blockstart){//TODO check if this function works how it i
      fbv[i] = 0xFFFFFFFF&(mask << digit);
     else if (i > element)
       fbv[i] = mask;
+	//Printf("\t%x", fbv[i]);
   }
 }
 

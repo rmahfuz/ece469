@@ -56,5 +56,6 @@ void RunOSTests() {
 	printf("read buffer should be 'rose is a beautiful flower': %s\n", buffer);
 	printf("File size of flowers.txt (should be %d): %d\n", 15355 + dstrlen(flower4) + 1, DfsInodeFilesize(file_handle));
 	//DfsInodeDelete(file_handle);
+	//DfsCloseFileSystem();
 }
 
