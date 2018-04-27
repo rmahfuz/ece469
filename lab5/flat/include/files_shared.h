@@ -9,16 +9,26 @@
 
 #define FILE_MAX_READWRITE_BYTES 4096
 
+/*void FileModuleInit();
+int FileOpen(char *filename, char *mode);
+int FileClose(int file_handle);
+int FileRead(int file_handle, void *mem, int num_bytes);
+int FileWrite(int file_handle, void *mem, int num_bytes);
+int FileSeek(int file_handle, int num_bytes, int from_where);
+int FileDelete(char *filename);*/
+
 typedef struct file_descriptor {
   // STUDENT: put file descriptor info here
-	uint32 inuse;
+	int inuse;
 	char filename[FILE_MAX_FILENAME_LENGTH];
-	uint32 inode;
+	int inode;
 	int eof;
 	int mode;//1->read; 2->write ; 3-> readwrite
-	uint32 currentposition;
+	int currentposition;
 	int processid;
 } file_descriptor;
+
+
 
 #define FILE_FAIL -1
 #define FILE_EOF -1

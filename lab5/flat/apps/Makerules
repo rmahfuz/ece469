@@ -36,7 +36,7 @@ CFLAGS= -mtraps -O3 -Wall
 
 # Flags for compiler indicating search path for include files
 INCDIR+= -I$(APPROOT)/../include
-
+#INCDIR+= -I$(APPROOT)/../include/os
 # Flags for compiler indicating which libraries should be linked
 LIBS+= usertraps.aso misc.o
 OBJLIBS=$(LIBS:%=$(APPROOT)/../lib/%)

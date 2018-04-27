@@ -1,0 +1,16 @@
+1) How to build solution:
+
+To test q1, q2 and q3 (which is q4),
+rm /tmp/ee469vaiyagar.img                    #removing .img file
+cd os; make clean; make                      # making os
+cd ../apps/fdisk; make clean; make; make run # making and running fdisk
+cd ../ostests; make clean; make; make run    #making and running ostests
+
+To test q5 (which is q6),
+cd os; make clean; make                      # making os
+cd ../apps/fdisk; make clean; make; make run # making and running fdisk
+cd ../test_file; make clean; make; make run    #making and running test_file
+
+2) Nothing unusual
+
+3) Sources: lecture notes, geeksforgeeks.com

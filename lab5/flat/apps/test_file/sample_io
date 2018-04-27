@@ -1,0 +1,38 @@
+cd ../../bin; dlxsim -x os.dlx.obj -a -D F -u test_file.dlx.obj; ee469_fixterminal
+Stack=0x1fffc0, pc starting at 0x15984
+Got 4 arguments.
+Available memory: 0x2a014 -> 0x200000.
+Argument count is 4.
+Argument 0 is -D.
+Argument 1 is F.
+Argument 2 is -u.
+Argument 3 is test_file.dlx.obj.
+dinosaur
+TrapFileOpenHandler: just parsed filename (sports.txt) from trapArgs
+TrapFileOpenHandler: just parsed mode (w) from trapArgs
+TrapFileOpenHandler: calling FileOpen("sports.txt", "w")
+FileOpen: create a new file named sports.txt
+Successfully opened sports.txt
+successfully wrote sport1
+successfully wrote sport2
+TrapFileOpenHandler: just parsed filename (sports.txt) from trapArgs
+TrapFileOpenHandler: just parsed mode (rw) from trapArgs
+TrapFileOpenHandler: calling FileOpen("sports.txt", "rw")
+Successfully opened sports.txt
+seek1 succeeded
+read sport2 (should be basketball players are generally tall): basketball players are generally tall
+should say that end of file reached:	FileRead: ERROR:  Cannot read from file with file handle 0 because we reached the end of the file
+seek2 succeeded
+successfully wrote sport3
+seek3 succeeded
+read sport1 (should be soccer players are messy): soccer players are messy
+read sport3 (should be rwimming is a winter sport, surprise!): rwimming is a winter sport, surprise!
+TrapDeleteCloseHandler: just parsed filename (sports.txt) from trapArgs
+Deletion of sports.txt succeeded
+No runnable processes - exiting!
+GracefulExit: closing filesystem and exiting simulator
+Exiting at program request.
+Instructions executed: 6855032
+Time simulated: 6.855 secs
+Real time elapsed: 0.389 secs
+Execution rate: 17.62M simulated instructions per real second.

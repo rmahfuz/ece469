@@ -70,7 +70,7 @@ uint32 FileOpen(char *filename, char *mode){
 			}
 //processid updated
 			//fdsArray[i].processid = getpid();  //please update!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
-			fdsArray[i].processid = 30;
+			fdsArray[i].processid = GetCurrentPid();
 //currentposition updated
 			fdsArray[i].currentposition = 0;
 //eof updated

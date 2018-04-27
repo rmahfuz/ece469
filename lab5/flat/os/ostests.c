@@ -11,14 +11,14 @@ void print_buf(char* buf) { int i; printf("printing buffer: "); for(i = 0; i < 1
 
 void RunOSTests() {
   // STUDENT: run any os-level tests here
-  /*
+  //
 	int file_handle, i;
 	char flower1[] = "rhododendron";
 	char flower2[] = "lilly is a nice flower";
 	char flower3[] = "daisy is a sweet flower";
 	char flower4[] = "rose is a beautiful flower";
 	char flower5[] = "lotus is found in muddy water";
-	char buffer[100];*/
+	char buffer[100];
 	
 	/*//Initial testing for Q4
 	printf("checking if flowers.txt exists (should not exist) : %d\n", DfsInodeFilenameExists("flowers.txt"));
@@ -33,7 +33,7 @@ void RunOSTests() {
 	DfsInodeDelete(file_handle);
 	printf("deleted flowers.txt\n");*/
 
-	/* //testing across runs of the simulator for Q4
+	 //testing across runs of the simulator for Q4
 	if (DfsInodeFilenameExists("flowers.txt") == DFS_FAIL) { //then open the file and write something into it
 		file_handle = DfsInodeOpen("flowers.txt");
 		DfsInodeWriteBytes(file_handle, flower1, 50, dstrlen(flower1) + 1);  //testing normal write
@@ -59,18 +59,18 @@ void RunOSTests() {
 	printf("read buffer should be 'rose is a beautiful flower': %s\n", buffer);
 	printf("File size of flowers.txt (should be %d): %d\n", 15355 + dstrlen(flower4) + 1, DfsInodeFilesize(file_handle));
 	//DfsInodeDelete(file_handle);
-	//DfsCloseFileSystem(); 
-	*/
+	DfsCloseFileSystem(); 
+	
 	//=================================================================================================================================================================
 	//Testing for Q6:
-	int file_desc, num_bytes;
+	/*int file_desc, num_bytes;
 	char* buf; //char buf[100];
 	char* sport1 = "soccer players are messy";
 	char* sport2 = "basketball players are generally tall";
 	char* sport3 = "swimming is a winter sport, surprise!";
 
 
-	/*file_desc = FileOpen("sports.txt", "w");
+	file_desc = FileOpen("sports.txt", "w");
 	if (file_desc == FILE_FAIL) { printf("Failed to open file sports.txt\n"); } else { printf("Successfully opened sports.txt\n"); }
 
 	num_bytes = FileWrite(file_desc, sport1, dstrlen(sport1) + 1);
@@ -108,8 +108,8 @@ void RunOSTests() {
 	num_bytes = FileRead(file_desc, buf, dstrlen(sport3) + 1);
 	if (num_bytes != dstrlen(sport3) + 1) { printf("read only %d bytes when trying to read sport3\n", num_bytes); } else { printf("read sport3 (should be %s): %s\n", sport3, buf); } clear_buf(buf);
 
-	if (FileClose(file_desc) == FILE_FAIL) { printf("Failed to close file sports.txt"); }*/
+	if (FileClose(file_desc) == FILE_FAIL) { printf("Failed to close file sports.txt"); }
 
-	if (FileDelete("sports.txt") == FILE_FAIL) {printf("Deletion of sports.txt failed\n"); } else {printf("Deletion of sports.txt succeeded\n"); }
+	if (FileDelete("sports.txt") == FILE_FAIL) {printf("Deletion of sports.txt failed\n"); } else {printf("Deletion of sports.txt succeeded\n"); }*/
 
 }
